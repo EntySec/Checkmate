@@ -41,7 +41,6 @@ setup(name='fishnet',
       },
       install_requires=[
           'pex @ git+https://github.com/EntySec/Pex',
-          'pirat @ git+https://github.com/EntySec/Pirat',
           'hatsploit @ git+https://github.com/EntySec/HatSploit',
       ],
       zip_safe=False,
