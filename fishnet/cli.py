@@ -43,10 +43,24 @@ def cli():
     description = ""
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-a', '--address', dest='address', help='Run Fishnet on custom address.')
-    args = parser.parse_args()
 
+    parser.add_argument('--db-username', dest='db_username', help='MySQL database username.')
+    parser.add_argument('--db-password', dest='db_password', help='MySQL database password.')
+    parser.add_argument('--db-host', dest='db_host', help='MySQL database host.')
+    parser.add_argument('--db-port', dest='db_port', type=int, help='MySQL database password.')
+    parser.add_argument('--db-name', dest='db_name', type=int, help='MySQL database name.')
+
+    args = parser.parse_args()
     application = get_wsgi_application()
-    call_command('migrate')
+
+    if args.db_username and args.db_password and args.db_host and args.db_port and args.db_name:
+        os.environ.setdefault('DB_USERNAME', args.db_username)
+        os.environ.setdefault('DB_PASSWORD', args.db_password)
+        os.environ.setdefault('DB_HOST', args.db_host)
+        os.environ.setdefault('DB_PORT', str(args.db_port))
+        os.environ.setdefault('DB_NAME', args.db_name)
+
+        call_command('migrate')
 
     if args.address:
         call_command('runserver', args.address)
