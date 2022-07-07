@@ -1,0 +1,47 @@
+<div aria-hidden="true" class="modal fade" id="selectScanner" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Choose scanners to apply in your project
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small">Select scanners</p>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <div class="row">
+                                    {% for scanner, data in scanners %}
+                                    <div class="col-6 col-sm-4">
+                                        <label class="imagecheck mb-4">
+                                            <input name="scanners" type="checkbox" value="{{ scanner }}" class="imagecheck-input">
+                                            <figure class="imagecheck-figure">
+                                                <center>
+                                                    <br>
+                                                    <img src="/static/{{ data.logo }}" height="50%" width="50%" alt="title" class="imagecheck-image mb-2">
+                                                    <label class="form-label">{{ scanner }}</label>
+                                                    <br>
+                                                </center>
+                                            </figure>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer no-bd">
+                    <button class="btn btn-primary" id="createButton" name="project_run" type="submit">Execute</button>
+                    <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

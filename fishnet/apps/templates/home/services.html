@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Services {% endblock title %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content" id="content"></div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function() {
+        update("/{{ project.uuid }}/services", "services", "{{ project.uuid }}", {'animate': true});
+
+        {% if project.running %}
+        setInterval(function() {
+            update("/{{ project.uuid }}/services", "services", "{{ project.uuid }}")
+        }, 5000);
+        {% endif %}
+	});
+</script>
+{% endblock javascripts %}

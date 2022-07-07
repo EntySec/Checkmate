@@ -1,0 +1,326 @@
+{% extends "layouts/base.html" %}
+
+{% load tags %}
+
+{% block title %} Home {% endblock title %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content" id="content">
+    <div class="page-inner">
+        <div class="page-header">
+            <h4 class="page-title">Fishnet</h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <h4 class="page-title">Projects</h4>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Fishnet projects</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills nav-primary justify-content-center" id="pills-tab" role="tablist">
+                            <li class="nav-item">
+                                <a aria-controls="pills-home" aria-selected="true" class="nav-link active"
+                                   data-toggle="pill" href="#pills-home-icon" id="pills-home-tab" role="tab">
+                                    <i class="flaticon-circle mr-2"></i>
+                                    Active
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a aria-controls="pills-profile" aria-selected="false" class="nav-link"
+                                   data-toggle="pill"
+                                   href="#pills-profile-icon" id="pills-profile-tab" role="tab">
+                                    <i class="flaticon-close mr-2"></i>
+                                    Archived
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-2 mb-3" id="pills-with-icon-tabContent">
+                            <div aria-labelledby="pills-home-tab-icon" class="tab-pane fade show active"
+                                 id="pills-home-icon"
+                                 role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h4 class="card-title">Active projects</h4>
+                                            <button class="btn btn-primary btn-round ml-auto" data-target="#addProject"
+                                                    data-toggle="modal">
+                                                <i class="fa fa-plus mr-2"></i>
+                                                Create Project
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div aria-hidden="true" class="modal fade" id="addProject" role="dialog"
+                                             tabindex="-1">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content"
+                                                     style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                            New project
+                                                        </h5>
+                                                        <button aria-label="Close" class="close" data-dismiss="modal"
+                                                                type="button">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <form method="post">
+                                                        {% csrf_token %}
+                                                        <div class="modal-body">
+                                                            <p class="small">Create a new Fishnet project</p>
+                                                            <div class="row">
+                                                                <div class="col-sm-12">
+                                                                    <div class="form-group form-group-default">
+                                                                        <label>Project name</label>
+                                                                        <input class="form-control" id="name"
+                                                                               name="name"
+                                                                               placeholder="RedTeam"
+                                                                               type="text">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="form-group">
+                                                                        <label class="form-label">Project
+                                                                            category</label>
+                                                                        <div class="selectgroup w-100">
+                                                                            <label class="selectgroup-item">
+                                                                                <input checked=""
+                                                                                       class="selectgroup-input"
+                                                                                       name="category"
+                                                                                       type="radio"
+                                                                                       value="network">
+                                                                                <span class="selectgroup-button selectgroup-button-icon"><i
+                                                                                        class="fas fa-wifi"></i></span>
+                                                                            </label>
+                                                                            <label class="selectgroup-item">
+                                                                                <input class="selectgroup-input"
+                                                                                       name="category"
+                                                                                       type="radio"
+                                                                                       value="bluetooth">
+                                                                                <span class="selectgroup-button selectgroup-button-icon"><i
+                                                                                        class="fab fa-bluetooth-b"></i></span>
+                                                                            </label>
+                                                                            <label class="selectgroup-item">
+                                                                                <input class="selectgroup-input"
+                                                                                       name="category"
+                                                                                       type="radio"
+                                                                                       value="external">
+                                                                                <span class="selectgroup-button selectgroup-button-icon"><i
+                                                                                        class="fas fa-binoculars"></i></span>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="form-group form-group-default">
+                                                                        <label>Project team</label>
+                                                                        <select class="form-control"
+                                                                                name="team">
+                                                                            <option value="private">No team (private project)</option>
+                                                                            {% for team in teams %}
+                                                                            {% if request.user.username in team.users %}
+                                                                            <option value="{{ team.name }}">{{ team.name }} - {{ team.purpose }}</option>
+                                                                            {% endif %}
+                                                                            {% endfor %}
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer no-bd">
+                                                            <button class="btn btn-primary"
+                                                                    name="create_project" type="submit">Create
+                                                            </button>
+                                                            <button class="btn btn-danger" data-dismiss="modal"
+                                                                    type="button">Close
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="display table table-hover" id="add-table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Author</th>
+                                                    <th>Team</th>
+                                                    <th>Category</th>
+                                                    <th>UUID</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for project in projects %}
+                                                {% get_teams as current_teams %}
+                                                {% for team in current_teams %}
+                                                {% if not project.archived %}
+                                                {% if not project.team and project.author == request.user.username or project.team == team.name and request.user.username in team.users %}
+                                                <tr>
+                                                    <td>{{ project.name }}</td>
+                                                    <td>{{ project.author }}</td>
+                                                    <td>{{ project.team }}</td>
+                                                    <td>{{ project.category }}</td>
+                                                    <td>{{ project.uuid }}</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-primary btn-lg"
+                                                                        data-original-title="Open"
+                                                                        data-toggle="tooltip"
+                                                                        onclick="location.href='{{ project.uuid }}/{{ project.category }}'"
+                                                                        title=""
+                                                                        type="button">
+                                                                    <i class="fa fa-external-link-alt"></i>
+                                                                </button>
+                                                            </form>
+                                                            {% if request.user.username == project.author %}
+                                                            <button class="btn btn-link btn-success btn-lg"
+                                                                    data-original-title="Edit"
+                                                                    onclick="editProject('{{ project.name }}', '{{ project.uuid }}');"
+                                                                    data-target="#editProject"
+                                                                    data-toggle="modal"
+                                                                    title=""
+                                                                    type="button">
+                                                                <i class="fa fa-edit"></i>
+                                                            </button>
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-warning"
+                                                                        data-original-title="Archive"
+                                                                        data-toggle="tooltip" name="archive_project"
+                                                                        title="" type="submit"
+                                                                        value="{{ project.uuid }}">
+                                                                    <i class="fa fa-archive"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-danger"
+                                                                        data-original-title="Delete"
+                                                                        data-toggle="tooltip" name="delete_project"
+                                                                        title="" type="submit"
+                                                                        value="{{ project.uuid }}">
+                                                                    <i class="fa fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div aria-labelledby="pills-profile-tab-icon" class="tab-pane fade" id="pills-profile-icon"
+                                 role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h4 class="card-title">Archived projects</h4>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="display table table-hover" id="archive-table">
+                                                <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Author</th>
+                                                    <th>Team</th>
+                                                    <th>Category</th>
+                                                    <th>UUID</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for project in projects %}
+                                                {% get_teams as current_teams %}
+                                                {% for team in current_teams %}
+                                                {% if project.archived %}
+                                                {% if not project.team and project.author == request.user.username or project.team and project.team == team.name and request.user.username in team.users %}
+                                                <tr>
+                                                    <td>{{ project.name }}</td>
+                                                    <td>{{ project.author }}</td>
+                                                    <td>{{ project.team }}</td>
+                                                    <td>{{ project.category }}</td>
+                                                    <td>{{ project.uuid }}</td>
+                                                    <td>
+                                                        {% if request.user.username == project.author %}
+                                                        <div class="form-button-action">
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-primary"
+                                                                        data-original-title="Activate"
+                                                                        data-toggle="tooltip" name="activate_project"
+                                                                        title="" type="submit"
+                                                                        value="{{ project.uuid }}">
+                                                                    <i class="fa fa-undo"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-danger"
+                                                                        data-original-title="Delete"
+                                                                        data-toggle="tooltip" name="delete_project"
+                                                                        title="" type="submit"
+                                                                        value="{{ project.uuid }}">
+                                                                    <i class="fa fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    function editProject(project_name, project_uuid) {
+        document.getElementById('edit_project_name').value = project_name;
+        document.getElementById('edit_project').value = project_uuid;
+    }
+
+    $(document).ready(function() {
+        $('#archive-table').DataTable({
+		    "pageLength": 5,
+	    });
+
+	    $('#add-table').DataTable({
+		    "pageLength": 5,
+	    });
+	});
+</script>
+{% endblock javascripts %}

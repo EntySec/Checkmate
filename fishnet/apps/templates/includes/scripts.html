@@ -1,0 +1,93 @@
+<script src="/static/assets/js/core/jquery.3.2.1.min.js"></script>
+<script src="/static/assets/js/core/popper.min.js"></script>
+<script src="/static/assets/js/core/bootstrap.min.js"></script>
+
+<script src="/static/assets/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+<script src="/static/assets/js/plugin/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js"></script>
+
+<script src="/static/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
+
+<script src="/static/assets/js/plugin/chart.js/chart.min.js"></script>
+
+<script src="/static/assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
+
+<script src="/static/assets/js/plugin/chart-circle/circles.min.js"></script>
+
+<script src="/static/assets/js/plugin/datatables/datatables.min.js"></script>
+
+<script src="/static/assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js"></script>
+
+<script src="/static/assets/js/plugin/jqvmap/jquery.vmap.min.js"></script>
+<script src="/static/assets/js/plugin/jqvmap/maps/jquery.vmap.world.js"></script>
+
+<script src="/static/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-network.min.js"></script>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+
+<script src="/static/assets/js/fishnet.min.js"></script>
+<script>
+    function update(url, update, project_uuid, params = {}) {
+        if (!$._data(window, "events").resize[1]) {
+            var data_params = {
+                project_uuid: project_uuid,
+                update: update,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            };
+
+            var data = $.extend(params, data_params);
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: data,
+                success: function(data) {
+                    $('#content').html(data);
+                    $(".modal-dialog").draggable({
+                        handle: ".modal-header"
+                    });
+                }
+            });
+        }
+    }
+
+	$(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
+
+	$(document).ready(function() {
+		$('#teams-table').DataTable({
+			"pageLength": 5,
+		});
+	});
+
+	$('#delete_team_permissions_error').on('click', function(){
+		var placementFrom = 'bottom';
+		var placementAlign = 'right';
+		var state = 'danger';
+		var style = 'withicon';
+		var content = {};
+
+		content.message = 'Failed to delete team due to that you are not the leader';
+		content.title = 'Permission denied';
+		if (style == "withicon") {
+			content.icon = 'fa fa-bell';
+		} else {
+			content.icon = 'none';
+		}
+		content.url = 'index.html';
+		content.target = '_blank';
+
+		$.notify(content,{
+			type: state,
+			placement: {
+				from: placementFrom,
+				align: placementAlign
+			},
+			time: 1000,
+			delay: 1,
+		});
+	});
+</script>

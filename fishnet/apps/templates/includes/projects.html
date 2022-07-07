@@ -1,0 +1,44 @@
+<div aria-hidden="true" class="modal fade" id="editProject" role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content"
+             style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Edit project
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal"
+                        type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small">Edit an existing Fishnet project</p>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <label>Project name</label>
+                                <input class="form-control"
+                                       name="name"
+                                       id="edit_project_name"
+                                       placeholder="Name"
+                                       value="{{ project.name }}"
+                                       type="text">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer no-bd">
+                    <button class="btn btn-primary" id="edit_project"
+                            name="edit_project" value="" type="submit">Save
+                    </button>
+                    <button class="btn btn-danger" data-dismiss="modal"
+                            type="button">Close
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

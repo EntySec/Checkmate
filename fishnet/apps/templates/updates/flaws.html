@@ -1,0 +1,81 @@
+<div class="content" id="content">
+    <div class="page-inner">
+        <div class="page-header">
+            <h4 class="page-title">{{ project.name }}</h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <h4 class="page-title">Flaws</h4>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <h4 class="card-title">Flaws detected</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="display table table-hover" id="flaws-table">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Family</th>
+                                    <th>Host</th>
+                                    <th>Rank</th>
+                                    <th>Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for flaw in flaws %}
+                                {% if flaw.project == project.uuid %}
+                                <tr>
+                                    <td>{{ flaw.name }}</td>
+                                    <td>{{ flaw.family }}</td>
+                                    <td>{{ flaw.host }}</td>
+                                    {% if flaw.rank == 'high' %}
+                                    <td>
+                                        <span class="badge badge-danger"> High</span>
+                                    </td>
+                                    {% elif flaw.rank == 'medium' %}
+                                    <td>
+                                        <span class="badge badge-warning"> Medium</span>
+                                    </td>
+                                    {% elif flaw.rank == 'low' %}
+                                    <td>
+                                        <span class="badge badge-success"> Low</span>
+                                    </td>
+                                    {% elif flaw.rank == 'info' %}
+                                    <td>
+                                        <span class="badge badge-info"> Info</span>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        <div class="form-button-action">
+                                            <button class="btn btn-link btn-primary btn-lg" data-original-title="Show"
+                                                    data-toggle="tooltip"
+                                                    title="" type="button">
+                                                <i class="fa fa-external-link-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#flaws-table').DataTable({
+        "pageLength": 10,
+    });
+</script>

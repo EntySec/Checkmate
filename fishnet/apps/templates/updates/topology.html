@@ -1,0 +1,242 @@
+<div class="content" id="content">
+    <div class="page-inner">
+        <div class="page-header">
+            <h4 class="page-title">{{ project.name }}</h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <h4 class="page-title">Topology</h4>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-head-row card-tools-still-right">
+                            <h4 class="card-title">Topology</h4>
+                            <div class="card-tools">
+                                <a id="topology-image" download="topology.png" class="btn btn-info btn-border btn-round btn-sm">
+                                    <span class="btn-label">
+                                        <i class="fa fa-file-export mr-2"></i>
+                                    </span>
+                                    Export
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="min-height: 500px;">
+                            <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-head-row">
+                            <div class="card-title">Top platforms</div>
+                            <div class="card-tools">
+                                <button id="platforms-image" class="btn btn-info btn-border btn-round btn-sm">
+                                    <span class="btn-label">
+                                        <i class="fa fa-file-export mr-2"></i>
+                                    </span>
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-sm">
+                            <canvas id="platforms-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Target networks</div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">Gateway</th>
+                                <th scope="col">Interface</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for network in networks %}
+                            {% if network.project == project.uuid %}
+                            <tr>
+                                <td>{{ network.gateway }}</td>
+                                <td><span class="badge badge-primary">{{ network.iface }}</span></td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$('#platforms-image').on('click', function() {
+    var link = document.createElement("a");
+    document.body.appendChild(link);
+    link.download = "platforms.png";
+    link.href = platformsChart.toBase64Image();
+    link.target = '_blank';
+    link.click();
+});
+
+var nodes = null;
+var edges = null;
+var network = null;
+
+var LENGTH_MAIN = 350,
+    LENGTH_SERVER = 150,
+    LENGTH_SUB = 120,
+    WIDTH_SCALE = 2,
+    GREEN = "green",
+    RED = "#C5000B",
+    ORANGE = "orange",
+    GRAY = "gray",
+    BLACK = "#2B1B17";
+
+function draw() {
+    nodes = [];
+    edges = [];
+
+    var value = 1;
+    var width = WIDTH_SCALE * 2;
+    var color = GRAY;
+    var label = null;
+
+    nodes.push({
+        id: 0,
+        label: "Fishnet",
+        group: "fishnet",
+        value: 10,
+        shape: "image",
+        image: "/static/assets/img/icon.png"
+    });
+
+    {% for network in networks %}
+    {% with forloop.counter as id %}
+    nodes.push({
+        id: {{ id }},
+        label: "{{ network.gateway | safe }}",
+        group: "network",
+        value: "{{ network.gateway | safe }}",
+        shape: "image",
+        image: "/static/assets/img/network.png"
+    });
+    edges.push({
+        from: 0,
+        to: {{ id }},
+        length: LENGTH_SUB,
+        color: color,
+        fontColor: color,
+        width: width,
+        label: null
+    })
+    {% for host in hosts %}
+    {% if host.gateway == network.gateway %}
+    nodes.push({
+        id: {{ id }}{{ forloop.counter }},
+        label: "{{ host.host | safe }}",
+        group: "host",
+        value: "{{ host.host | safe }}",
+        shape: "image",
+        image: "/static/assets/img/{{ host.platform }}.png"
+    });
+    edges.push({
+        from: {{ id }}{{ forloop.counter }},
+        to: {{ id }},
+        length: LENGTH_SUB,
+        color: color,
+        fontColor: color,
+        width: width,
+        label: null
+    })
+    {% endif %}
+    {% endfor %}
+    {% endwith %}
+    {% endfor %}
+
+    var container = document.getElementById("topology-chart");
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+        nodes: {
+            scaling: {
+                min: 16,
+                max: 32
+            },
+        },
+        edges: {
+            color: GRAY,
+            smooth: false
+        },
+        physics: {
+            barnesHut: {
+                gravitationalConstant: -30000
+            },
+            stabilization: {
+                iterations: 2500
+            }
+        },
+    };
+
+    network = new vis.Network(container, data, options);
+    network.on("afterDrawing", function(ctx) {
+        var dataURL = ctx.canvas.toDataURL();
+        document.getElementById('topology-image').href = dataURL;
+    });
+}
+
+draw();
+
+var platformsObject = document.getElementById('platforms-chart').getContext('2d');
+var platformsChart = new Chart(platformsObject, {
+    type: 'pie',
+    data: {
+        datasets: [{
+            data: {{ platforms.1 }},
+            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+        }],
+
+        labels: {{ platforms.0 | safe }}
+    },
+    options: {
+        {% if not animate %}
+        animation: {
+            duration: 0
+        },
+        hover: {
+            animationDuration: 0
+        },
+        responsiveAnimationDuration: 0,
+        {% endif %}
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+            display: true,
+            position: 'right'
+        },
+        layout: {
+            padding: {
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20
+            }
+        }
+    }
+});
+</script>

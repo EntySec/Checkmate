@@ -1,0 +1,81 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Login {% endblock title %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+    <div class="page-inner">
+        <div class="page-header">
+            <h4 class="page-title">Fishnet</h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <h4 class="page-title">Login</h4>
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+
+                            {% if msg %}
+                            <span class="text-info">{{ msg | safe }}</span>
+                            {% else %}
+                            <span>
+                                Add your credentials
+                            </span>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 col-lg-4">
+
+                                    <div class="form-group">
+                                        <div class="input-group mb-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="icon-user"></i>
+                                                </span>
+                                            </div>
+                                            {{ form.username }}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="input-group mb-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="icon-lock"></i>
+                                                </span>
+                                            </div>
+                                            {{ form.password }}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-action">
+                            <button class="btn btn-primary" type="submit">Submit</button>
+                            &nbsp; &nbsp;
+                            <span>Not a member?</span> Please <a href="{% url 'register' %}">Register</a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}{% endblock javascripts %}

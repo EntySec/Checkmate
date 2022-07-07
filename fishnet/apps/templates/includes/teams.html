@@ -1,0 +1,129 @@
+<div aria-hidden="true" class="modal fade" id="showTeam" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Fishnet teams
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="small">These are all teams created</p>
+                <div class="row">
+                    <div class="table-responsive">
+                        <table class="display table table-hover" id="teams-table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Purpose</th>
+                                <th>Leader</th>
+                                <th>Participants</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for team in teams %}
+                            <tr>
+                                <td>{{ team.name }}</td>
+                                <td>{{ team.purpose }}</td>
+                                <td>{{ team.leader }}</td>
+                                <td>{{ team.users|length }}</td>
+                                <td>
+                                    {% if request.user.username == team.leader %}
+                                    <div class="form-button-action">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <button class="btn btn-link btn-danger" data-original-title="Delete" data-toggle="tooltip"
+                                                    name="delete_team" title="" type="submit"
+                                                    value="{{ team.name }}">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer no-bd">
+                    <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div aria-hidden="true" class="modal fade" id="addTeam" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    New team
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small">Create a new Fishnet team</p>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-group-default">
+                                <label>Team name</label>
+                                <input class="form-control" id="name" name="create_team" placeholder="Fsociety"
+                                       type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">Team purpose</label><br><br>
+                                <div class="selectgroup selectgroup-pills">
+                                    <label class="selectgroup-item">
+                                        <input checked="" class="selectgroup-input" name="purpose" type="radio"
+                                               value="pentest">
+                                        <span class="selectgroup-button">Pentest</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>Users</label>
+                                <select class="form-control" id="users" multiple name="users">
+                                    {% for user in users %}
+                                    {% if user.username != request.user.username %}
+                                    <option value="{{ user.username }}">
+                                        {% if user.first_name or user.last_name %}
+                                        {% if user.first_name %}
+                                        {{ user.first_name }}
+                                        {% endif %}
+                                        {% if user.last_name %}
+                                        {{ user.last_name }}
+                                        {% endif %}
+                                        ({{ user.username }})
+                                        {% else %}
+                                        {{ user.username }}
+                                        {% endif %}
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer no-bd">
+                    <button class="btn btn-primary" id="createButton" type="submit">Create</button>
+                    <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
