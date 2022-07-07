@@ -36,7 +36,7 @@ setup(name='fishnet',
       include_package_data=True,
       entry_points={
           "console_scripts": [
-              "fnet = fishnet.fishnet:cli"
+              "fnet = fishnet:cli"
           ]
       },
       install_requires=[
