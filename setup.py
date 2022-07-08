@@ -40,7 +40,7 @@ setup(name='fishnet',
           ]
       },
       install_requires=[
-          'whitenoise', 'Django', 'asgiref', 'django-picklefield',
+          'whitenoise', 'Django', 'asgiref', 'django-picklefield', 'unipath', 'mysqlclient',
           'pex @ git+https://github.com/EntySec/Pex',
           'hatsploit @ git+https://github.com/EntySec/HatSploit',
       ],
