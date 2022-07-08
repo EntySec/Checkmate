@@ -40,6 +40,7 @@ setup(name='fishnet',
           ]
       },
       install_requires=[
+          'whitenoise', 'Django', 'asgiref', 'django-picklefield',
           'pex @ git+https://github.com/EntySec/Pex',
           'hatsploit @ git+https://github.com/EntySec/HatSploit',
       ],
