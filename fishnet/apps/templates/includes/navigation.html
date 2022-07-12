@@ -175,9 +175,11 @@
                                                 <button name="project_stop" type="submit" class="btn">
                                                     <i class="fas fa-ban"></i>
                                                 </button>
+                                                {% if request.user.username == project.author %}
                                                 <button name="project_archive" type="submit" class="btn">
                                                     <i class="fas fa-archive"></i>
                                                 </button>
+                                                {% endif %}
                                             </form>
                                         </div>
                                     </a>

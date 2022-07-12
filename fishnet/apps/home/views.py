@@ -30,10 +30,10 @@ from django.shortcuts import render
 from django.template import loader
 from django.urls import reverse
 
-from .network import Network
-from .projects import Projects
-from .settings import Settings
-from .teams import Teams
+from fishnet.lib.network import Network
+from fishnet.lib.projects import Projects
+from fishnet.lib.settings import Settings
+from fishnet.lib.teams import Teams
 
 network = Network()
 projects = Projects()
@@ -106,7 +106,7 @@ def allow_edit_profile(request):
                     settings.change_setting_user(request.user.username, username)
                     teams.change_team_leader(request.user.username, username)
                     teams.change_team_user(request.user.username, username)
-                    projects.change_project_author(request.user.username, username)
+                    projects.change_projects_author(request.user.username, username)
 
                     request.user.username = username
 
@@ -125,7 +125,15 @@ def allow_manage_teams(request):
     if request.method == 'POST':
         if 'delete_team' in request.POST:
             name = request.POST['delete_team']
-            teams.delete_team(name)
+            if teams.check_team_leader(name, request.user.username):
+                teams.delete_team(name)
+
+        if 'edit_team' in request.POST:
+            name = request.POST['edit_team']
+            if teams.check_team_leader(name, request.user.username):
+                if 'name' in request.POST:
+                    teams.update_name(name, request.POST['name'])
+                    projects.change_projects_team(name, request.POST['name'])
 
 
 def allow_create_team(request):
@@ -177,29 +185,27 @@ def projects_page(request):
     allow_edit_profile(request)
 
     if request.method == 'POST':
-        if 'toggle_dark' in request.POST:
-            settings.update_setting(request.user.username, {
-                'dark': bool(int(request.POST['toggle_dark']))
-            })
-
         if 'archive_project' in request.POST:
             project_uuid = request.POST['archive_project']
-            projects.stop_project(project_uuid)
-            projects.archive_project(project_uuid)
+            if projects.check_project_author(project_uuid, request.user.username):
+                projects.stop_project(project_uuid)
+                projects.archive_project(project_uuid)
 
         if 'delete_project' in request.POST:
             project_uuid = request.POST['delete_project']
-            projects.delete_project(project_uuid)
+            if projects.check_project_author(project_uuid, request.user.username):
+                projects.delete_project(project_uuid)
 
         if 'activate_project' in request.POST:
             project_uuid = request.POST['activate_project']
-            projects.activate_project(project_uuid)
+            if projects.check_project_author(project_uuid, request.user.username):
+                projects.activate_project(project_uuid)
 
         if 'edit_project' in request.POST:
             project_uuid = request.POST['edit_project']
-
-            if 'name' in request.POST:
-                projects.update_name(project_uuid, request.POST['name'])
+            if projects.check_project_author(project_uuid, request.user.username):
+                if 'name' in request.POST:
+                    projects.update_name(project_uuid, request.POST['name'])
 
         if 'create_project' in request.POST:
             name = request.POST['name']
@@ -259,14 +265,15 @@ def pages(request):
 
                         elif 'project_stop' in request.POST:
                             if projects.get_project(project_uuid).category == 'network':
-                                network.stop_scan()
+                                network.stop_scan(project_uuid)
                             projects.stop_project(project_uuid)
 
                         elif 'project_archive' in request.POST:
-                            if projects.get_project(project_uuid).category == 'network':
-                                network.stop_scan()
-                            projects.stop_project(project_uuid)
-                            projects.archive_project(project_uuid)
+                            if projects.check_project_author(project_uuid, request.user.username):
+                                if projects.get_project(project_uuid).category == 'network':
+                                    network.stop_scan(project_uuid)
+                                projects.stop_project(project_uuid)
+                                projects.archive_project(project_uuid)
 
                     if projects.get_project(project_uuid).category == 'network':
                         context = network.get_scan(project_uuid)

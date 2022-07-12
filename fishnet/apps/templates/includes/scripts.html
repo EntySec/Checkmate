@@ -57,6 +57,11 @@
         handle: ".modal-header"
     });
 
+    function editTeam(team_name) {
+        document.getElementById('edit_team_name').value = team_name;
+        document.getElementById('edit_team').value = team_name;
+    }
+
 	$(document).ready(function() {
 		$('#teams-table').DataTable({
 			"pageLength": 5,
