@@ -2,7 +2,7 @@
 
 
 <p align="center">
-    <b>Fishnet</b><br>
+    <b>Fishnet Framework</b><br>
     <br>
     <a href="https://www.codefactor.io/repository/github/entysec/fishnet"><img src="https://www.codefactor.io/repository/github/entysec/fishnet/badge" alt="CodeFactor" /></a><br>
     <br>
