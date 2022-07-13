@@ -80,6 +80,9 @@ class Network:
                     self.jobs[project_uuid][scanner] = {}
 
                 for iface in gateways:
+                    if iface == 'lo0':
+                        continue
+
                     if iface not in self.jobs[project_uuid][scanner]:
                         self.jobs[project_uuid][scanner][iface] = threading.Thread(
                             target=self.scanners[scanner]['plugin'].run,
