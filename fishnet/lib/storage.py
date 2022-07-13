@@ -33,3 +33,7 @@ class Storage:
     @staticmethod
     def hosts_db():
         return Host.objects
+
+    @staticmethod
+    def networks_db():
+        return Network.objects
