@@ -142,10 +142,11 @@ def allow_create_team(request):
             name = request.POST['create_team']
             purpose = request.POST['purpose']
 
+            users = []
             if 'users' in request.POST:
-                users = request.POST['users']
-            else:
-                users = [request.user.username]
+                users = request.POST.getlist('users')
+
+            users.append(request.user.username)
 
             leader = request.user.username
             teams.create_team(name, purpose, users, leader)
