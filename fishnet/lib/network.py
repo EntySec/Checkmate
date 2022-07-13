@@ -26,6 +26,8 @@ import os
 import ctypes
 import threading
 
+from pex.net import Net
+
 from fishnet.apps.home.models import Network as NetworkDB
 from fishnet.apps.home.models import Host as HostDB
 from fishnet.apps.home.models import Flaw as FlawDB
@@ -35,6 +37,8 @@ from fishnet.lib.projects import Projects
 
 
 class Network:
+    net = Net()
+
     plugins = Plugins()
     projects = Projects()
 
