@@ -260,7 +260,7 @@ def pages(request):
                     if request.method == 'POST':
                         if 'project_run' in request.POST:
                             if projects.get_project(project_uuid).category == 'network':
-                                network.run_scan(project_uuid, request.POST['scanners'])
+                                network.run_scan(project_uuid, request.POST.getlist('scanners'))
                             projects.run_project(project_uuid)
 
                         elif 'project_stop' in request.POST:
