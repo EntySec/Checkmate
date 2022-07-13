@@ -42,7 +42,7 @@ class Network:
 
     scanner = threading.Thread()
     jobs = {}
-    job = threading.Thread()
+    job = {}
 
     def stop_scan(self, project_uuid):
         if project_uuid in self.jobs:
