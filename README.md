@@ -9,5 +9,5 @@
     Powerful advanced web platform for
     <br>collaboration and automated penetration testing.
     <br>
-    <p align="center"><a href="https://fishnet.com">About Fishnet</a> | <a href="https://github.com/EntySec/Fishnet/wiki/Installation">Installation</a> | <a href="https://github.com/EntySec/Fishnet/wiki/Using-Fishnet">Using Fishnet</a><p>
+    <p align="center"><a href="https://fishnet-project.netlify.com">About Fishnet</a> | <a href="https://github.com/EntySec/Fishnet/wiki/Installation">Installation</a> | <a href="https://github.com/EntySec/Fishnet/wiki/Using-Fishnet">Using Fishnet</a><p>
 </p>
