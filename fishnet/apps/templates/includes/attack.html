@@ -1,0 +1,31 @@
+<div aria-hidden="true" class="modal fade" id="attackModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Attack surface
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" onclick="executeAttack('');" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="small">Attack log</p>
+
+                <input hidden id="flaw" value="">
+                <input hidden id="host" value="">
+                <input hidden id="port" value="">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group" id="attack-log"></div>
+                    </div>
+                </div>
+                <div class="modal-footer no-bd">
+                    <button class="btn btn-success" onclick="executeAttack('{{ request.path }}');" type="button">Execute</button>
+                    <button class="btn btn-danger" data-dismiss="modal" onclick="executeAttack('');" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

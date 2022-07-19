@@ -27,8 +27,9 @@ from picklefield.fields import PickledObjectField
 
 
 class Session(models.Model):
-    session_id = models.PositiveIntegerField()
+    session = models.PositiveIntegerField()
     platform = models.CharField(max_length=250)
+    architecture = models.CharField(max_length=250)
     type = models.CharField(max_length=250)
     host = models.CharField(max_length=250)
     port = models.PositiveIntegerField()
@@ -36,9 +37,11 @@ class Session(models.Model):
     longitude = models.CharField(max_length=250)
     country = models.CharField(max_length=250)
     address = models.CharField(max_length=250)
+    project = models.CharField(max_length=250)
+    plugin = models.CharField(max_length=250)
 
     def __str__(self):
-        return self.session_id
+        return self.session
 
 
 class Network(models.Model):
@@ -86,8 +89,12 @@ class Flaw(models.Model):
     name = models.CharField(max_length=250)
     family = models.CharField(max_length=250)
     host = models.CharField(max_length=250)
+    port = models.PositiveIntegerField()
+    service = models.CharField(max_length=250)
     rank = models.CharField(max_length=250)
     project = models.CharField(max_length=250)
+    module = models.CharField(max_length=250)
+    plugin = models.CharField(max_length=250)
 
     def __str__(self):
         return self.name

@@ -79,47 +79,13 @@
                                     <td>
                                         {% for port, service in host.ports.items %}
                                         {% if port == 80 or port == 8080 or port == 443 or port == 81 %}
-                                        <button class="btn btn-sm btn-success" data-target="#openFrameFor{{ host }}"
-                                                data-toggle="modal">
+                                        <button class="btn btn-sm btn-success" onclick="document.getElementById('observeFrame').src = '{{ service }}://{{ host.host }}:{{ port }}/'"
+                                                data-toggle="modal" data-target="#openFrame">
                                             <span class="btn-label">
                                                 {{ port }}
                                             </span>
                                             {{ service }}
                                         </button>
-                                        <div aria-hidden="true" class="modal fade" id="openFrameFor{{ host }}"
-                                             role="dialog"
-                                             tabindex="-1">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content"
-                                                     style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">
-                                                            Service quick view
-                                                        </h5>
-                                                        <button aria-label="Close" class="close" data-dismiss="modal"
-                                                                type="button">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p class="small">Observe what is happening right now</p>
-                                                        <div class="row">
-                                                            <div class="col-md-12">
-                                                                <div class="form-group">
-                                                                    <iframe frameborder="0" height="450px" width=100%
-                                                                            src="http://{{ host.host }}:{{ port }}/"></iframe>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer no-bd">
-                                                        <button class="btn btn-danger" data-dismiss="modal"
-                                                                type="button">Close
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                         {% else %}
                                         <button class="btn btn-sm btn-success disabled">
                                             <span class="btn-label">

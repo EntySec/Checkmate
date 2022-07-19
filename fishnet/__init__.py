@@ -25,6 +25,9 @@ SOFTWARE.
 import os
 import argparse
 import sys
+import yaml
+
+from yaml.loader import SafeLoader
 
 
 def cli():
@@ -62,23 +65,40 @@ def cli():
         args.db_name
     ]
 
-    if all(db_args):
-        os.environ.setdefault('DB_USERNAME', args.db_username)
-        os.environ.setdefault('DB_PASSWORD', args.db_password)
-        os.environ.setdefault('DB_HOST', args.db_host)
-        os.environ.setdefault('DB_PORT', str(args.db_port))
-        os.environ.setdefault('DB_NAME', args.db_name)
+    if not os.path.isdir(os.path.expanduser('~/.fishnet')):
+        os.mkdir(os.path.expanduser('~/.fishnet'))
 
-        get_wsgi_application()
+    if not os.path.exists(os.path.expanduser('~/.fishnet/config.yml')):
+        if all(db_args):
+            with open(os.path.expanduser('~/.fishnet/config.yml'), 'w') as f:
+                yaml.dump({
+                    'DB_USERNAME': args.db_username,
+                    'DB_PASSWORD': args.db_password,
+                    'DB_HOST': args.db_host,
+                    'DB_PORT': str(args.db_port),
+                    'DB_NAME': args.db_name
+                }, f)
+        else:
+            parser.print_help()
+            sys.exit(1)
 
-        if args.migrate:
-            call_command('migrate')
+    with open(os.path.expanduser('~/.fishnet/config.yml'), 'r') as f:
+        config = yaml.safe_load(f)
 
-        if args.address:
-            call_command('runserver', args.address)
-            sys.exit(0)
+        os.environ.setdefault('DB_USERNAME', config['DB_USERNAME'])
+        os.environ.setdefault('DB_PASSWORD', config['DB_PASSWORD'])
+        os.environ.setdefault('DB_HOST', config['DB_HOST'])
+        os.environ.setdefault('DB_PORT', config['DB_PORT'])
+        os.environ.setdefault('DB_NAME', config['DB_NAME'])
 
-        call_command('runserver', '0.0.0.0:7777')
-    else:
-        parser.print_help()
-        sys.exit(1)
+    get_wsgi_application()
+
+    if args.migrate:
+        call_command('migrate')
+        sys.exit(0)
+
+    if args.address:
+        call_command('runserver', args.address)
+        sys.exit(0)
+
+    call_command('runserver', '0.0.0.0:7777')

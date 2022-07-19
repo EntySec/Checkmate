@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from fishnet.apps.home.models import Host, Flaw
+from fishnet.apps.home.models import Host, Flaw, Network, Session
 
 
 class Storage:
@@ -37,3 +37,7 @@ class Storage:
     @staticmethod
     def networks_db():
         return Network.objects
+
+    @staticmethod
+    def sessions_db():
+        return Session.objects

@@ -26,6 +26,7 @@
 
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.29.1/js/jquery.terminal.js"></script>
 
 <script src="/static/assets/js/fishnet.min.js"></script>
 <script>
@@ -53,6 +54,30 @@
         }
     }
 
+    function executeAttack(url) {
+        if (url) {
+            data = '<div class="form-group" id="attack-log"><center><i class="fa fa-cog fa-4x fa-spin"></i></center></div>'
+            $('#attack-log').html(data);
+
+            $.ajax(url, {
+                type: 'POST',
+                data: {
+                    flaw: document.getElementById('flaw').value,
+                    attack: '',
+                    host: document.getElementById('host').value,
+                    port: document.getElementById('port').value,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    $('#attack-log').html(data);
+                }
+            });
+        } else {
+            data = '<div class="form-group" id="attack-log"></div>'
+            $('#attack-log').html(data);
+        }
+    }
+
 	$(".modal-dialog").draggable({
         handle: ".modal-header"
     });
@@ -60,6 +85,12 @@
     function editTeam(team_name) {
         document.getElementById('edit_team_name').value = team_name;
         document.getElementById('edit_team').value = team_name;
+    }
+
+    function attackModal(flaw, host, port) {
+        document.getElementById('flaw').value = flaw;
+        document.getElementById('host').value = host;
+        document.getElementById('port').value = port;
     }
 
 	$(document).ready(function() {

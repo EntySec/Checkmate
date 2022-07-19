@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/assets/css/fishnet.min.css">
 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.29.1/css/jquery.terminal.css" rel="stylesheet"/>
     {% block stylesheets %}{% endblock stylesheets %}
 
 </head>
@@ -40,6 +41,8 @@
         {% include 'includes/projects.html' %}
         {% else %}
         {% include 'includes/scanners.html' %}
+        {% include 'includes/frame.html' %}
+        {% include 'includes/attack.html' %}
         {% endif %}
 
         {% include 'includes/profile.html' %}

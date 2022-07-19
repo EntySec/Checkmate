@@ -27,7 +27,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.template import loader
+from django.template import loader, Context, Template
 from django.urls import reverse
 
 from fishnet.lib.network import Network
@@ -260,24 +260,71 @@ def pages(request):
                 if projects.check_project_perms(project_uuid, request.user.username):
                     if request.method == 'POST':
                         if 'project_run' in request.POST:
+                            projects.run_project(project_uuid)
                             if projects.get_project(project_uuid).category == 'network':
                                 network.run_scan(project_uuid, request.POST.getlist('scanners'))
-                            projects.run_project(project_uuid)
 
                         elif 'project_stop' in request.POST:
+                            projects.stop_project(project_uuid)
                             if projects.get_project(project_uuid).category == 'network':
                                 network.stop_scan(project_uuid)
-                            projects.stop_project(project_uuid)
 
                         elif 'project_archive' in request.POST:
                             if projects.check_project_author(project_uuid, request.user.username):
+                                projects.stop_project(project_uuid)
                                 if projects.get_project(project_uuid).category == 'network':
                                     network.stop_scan(project_uuid)
-                                projects.stop_project(project_uuid)
                                 projects.archive_project(project_uuid)
 
                     if projects.get_project(project_uuid).category == 'network':
-                        context = network.get_scan(project_uuid)
+                        if request.method == 'POST':
+                            if 'session' in request.POST:
+                                if 'command' in request.POST:
+                                    result = network.session_execute(
+                                        project_uuid,
+                                        request.POST['session'],
+                                        request.POST['command']
+                                    )
+
+                                    file = Template('<pre>{{ result }}</pre>')
+                                    return HttpResponse(file.render(
+                                        Context({
+                                            'result': result
+                                        })
+                                    ))
+
+                            if 'close_session' in request.POST:
+                                network.close_session(project_uuid, request.POST['close_session'])
+
+                            if 'attack' in request.POST:
+                                flaw = request.POST['flaw']
+
+                                options = {
+                                    'HOST': request.POST['host'],
+                                    'PORT': request.POST['port']
+                                }
+
+                                try:
+                                    result = network.run_attack(project_uuid, flaw, options)
+
+                                except RuntimeError as e:
+                                    result = f"[-] {str(e)}"
+
+                                except RuntimeWarning as w:
+                                    result = f"[!] {str(w)}"
+
+                                except Exception as e:
+                                    result = f"[-] An error occured: {str(e)}!"
+
+                                file = Template('<div class="form-group" id="attack-log"><pre>{{ result }}</pre></div>')
+
+                                return HttpResponse(file.render(
+                                    Context({
+                                        'result': result
+                                    })
+                                ))
+
+                        context.update(network.get_scan(project_uuid))
                     project = projects.get_project(project_uuid)
                 else:
                     raise template.TemplateDoesNotExist(endpoint)
@@ -289,7 +336,6 @@ def pages(request):
             raise template.TemplateDoesNotExist(endpoint)
 
         context.update({
-            'dark_mode': settings.get_settings(request.user.username).dark,
             'project': project,
             'segment': endpoint,
             'projects': projects.get_projects(),

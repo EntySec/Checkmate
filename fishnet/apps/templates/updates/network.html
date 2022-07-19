@@ -90,31 +90,32 @@
             </div>
         </div>
         <div class="row row-card-no-pd">
-				<div class="col-md-12">
-					<div class="card">
-						<div class="card-header">
-							<div class="card-head-row card-tools-still-right">
-								<h4 class="card-title">Recent vulnerabilities</h4>
-								<div class="card-tools">
-									<a id="topology-image" download="topology.png" class="btn btn-info btn-border btn-round btn-sm">
-                                        <span class="btn-label">
-                                            <i class="fa fa-file-export mr-2"></i>
-                                        </span>
-                                        Export
-                                    </a>
-								</div>
-							</div>
-						</div>
-						<div class="card-body">
-							<div class="row">
-								<div class="col-md-8">
-									<div class="table-responsive table-hover table-sales">
-                                        <table class="table table-hover">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-head-row card-tools-still-right">
+                            <h4 class="card-title">Recent vulnerabilities</h4>
+                            <div class="card-tools">
+                                <a id="topology-image" download="topology.png" class="btn btn-info btn-border btn-round btn-sm">
+                                    <span class="btn-label">
+                                        <i class="fa fa-file-export mr-2"></i>
+                                    </span>
+                                    Export
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="table-responsive table-hover table-sales">
+                                    <table class="table table-hover">
                                         <thead>
                                         <tr>
                                             <th scope="col">Name</th>
                                             <th scope="col">Family</th>
                                             <th scope="col">Host</th>
+                                            <th scope="col">Port</th>
                                             <th scope="col">Rank</th>
                                             <th scope="col">Action</th>
                                         </tr>
@@ -127,29 +128,50 @@
                                             <td>{{ flaw.name }}</td>
                                             <td>{{ flaw.family }}</td>
                                             <td>{{ flaw.host }}</td>
-                                            {% if flaw.rank == 'high' %}
                                             <td>
+                                                {% if flaw.port != 0 %}
+                                                {% if flaw.port == 80 or flaw.port == 8080 or flaw.port == 443 or flaw.port == 81 %}
+                                                <button class="btn btn-sm btn-success" onclick="document.getElementById('observeFrame').src = '{{ flaw.service }}://{{ flaw.host }}:{{ flaw.port }}/'"
+                                                        data-toggle="modal" data-target="#openFrame">
+                                                    <span class="btn-label">
+                                                        {{ flaw.port }}
+                                                    </span>
+                                                    {{ flaw.service }}
+                                                </button>
+                                                {% else %}
+                                                <button class="btn btn-sm btn-success disabled">
+                                                    <span class="btn-label">
+                                                        {{ flaw.port }}
+                                                    </span>
+                                                    {{ flaw.service }}
+                                                </button>
+                                                {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if flaw.rank == 'high' %}
                                                 <span class="badge badge-danger"> High</span>
-                                            </td>
-                                            {% elif flaw.rank == 'medium' %}
-                                            <td>
+                                                {% elif flaw.rank == 'medium' %}
                                                 <span class="badge badge-warning"> Medium</span>
-                                            </td>
-                                            {% elif flaw.rank == 'low' %}
-                                            <td>
+                                                {% elif flaw.rank == 'low' %}
                                                 <span class="badge badge-success"> Low</span>
-                                            </td>
-                                            {% elif flaw.rank == 'info' %}
-                                            <td>
+                                                {% elif flaw.rank == 'info' %}
                                                 <span class="badge badge-info"> Info</span>
+                                                {% endif %}
                                             </td>
-                                            {% endif %}
                                             <td>
                                                 <div class="form-button-action">
                                                     <button class="btn btn-link btn-primary btn-lg" data-original-title="Show"
                                                             data-toggle="tooltip"
                                                             title="" type="button">
                                                         <i class="fa fa-external-link-alt"></i>
+                                                    </button>
+                                                    <button class="btn btn-link btn-danger btn-lg" data-original-title="Attack"
+                                                            onclick="attackModal('{{ flaw.name }}', '{{ flaw.host }}', '{{ flaw.port }}');"
+                                                            data-toggle="modal"
+                                                            data-target="#attackModal"
+                                                            title="" type="button">
+                                                        <i class="fa fa-bomb"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -158,19 +180,19 @@
                                         {% endif %}
                                         {% endfor %}
                                         </tbody>
-                                        </table>
-									</div>
-								</div>
-								<div class="col-md-4">
-									<div class="chart-container">
-                                        <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
-                                    </div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="chart-container">
+                                    <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
         <div class="row row-card-no-pd">
             <div class="col-md-12">
                 <div class="card">

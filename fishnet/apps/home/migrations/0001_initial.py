@@ -35,16 +35,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Session',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('session_id', models.PositiveIntegerField()),
+                ('session', models.PositiveIntegerField()),
                 ('platform', models.CharField(max_length=250)),
+                ('architecture', models.CharField(max_length=250)),
                 ('type', models.CharField(max_length=250)),
                 ('host', models.CharField(max_length=250)),
                 ('port', models.PositiveIntegerField()),
                 ('latitude', models.CharField(max_length=250)),
                 ('longitude', models.CharField(max_length=250)),
                 ('country', models.CharField(max_length=250)),
-                ('address', models.CharField(max_length=250))
+                ('address', models.CharField(max_length=250)),
+                ('project', models.CharField(max_length=250)),
+                ('plugin', models.CharField(max_length=250))
             ]
         ),
         migrations.CreateModel(
@@ -89,9 +91,13 @@ class Migration(migrations.Migration):
             fields=[
                 ('name', models.CharField(max_length=250)),
                 ('host', models.CharField(max_length=250)),
+                ('port', models.PositiveIntegerField()),
+                ('service', models.CharField(max_length=250)),
                 ('family', models.CharField(max_length=250)),
                 ('rank', models.CharField(max_length=250)),
-                ('project', models.CharField(max_length=250))
+                ('project', models.CharField(max_length=250)),
+                ('module', models.CharField(max_length=250)),
+                ('plugin', models.CharField(max_length=250))
             ]
         ),
         migrations.CreateModel(
