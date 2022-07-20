@@ -60,8 +60,6 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             else:
                 sessions_db.filter(session=session.session).delete()
 
-        return sessions_db.filter(project=project_uuid)
-
     def attack(self, module, options):
         self.modules.use_module(module)
         self.runtime.update()
