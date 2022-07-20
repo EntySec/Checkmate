@@ -41,7 +41,7 @@
                        href="/{{ project.uuid }}/services" role="button">
                         <i class="fa fa-eye mr-2"></i>
                         <span class="mr-2">Services</span>
-                        {% if services %}
+                        {% if services.0 %}
                         <span class="badge badge-success">{{ services.0 | length }}</span>
                         {% endif %}
                     </a>
@@ -99,8 +99,8 @@
                                         <div class="notif-content">
                                             <span class="subject">Fishnet</span>
                                             <span class="block">
-														Welcome to Fishnet, yet another auditor!
-													</span>
+						Welcome to Fishnet, yet another auditor!
+					    </span>
                                             <span class="time">success</span>
                                         </div>
                                     </a>
