@@ -25,7 +25,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container" style="min-height: 500px;">
+                        <div class="update-protected chart-container" style="min-height: 500px;">
                             <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="chart-container-sm">
+                        <div class="update-protected chart-container-sm">
                             <canvas id="platforms-chart"></canvas>
                         </div>
                     </div>
@@ -62,6 +62,7 @@
                             <tr>
                                 <th scope="col">Gateway</th>
                                 <th scope="col">Interface</th>
+                                <th scope="col">Method</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -70,6 +71,7 @@
                             <tr>
                                 <td>{{ network.gateway }}</td>
                                 <td><span class="badge badge-primary">{{ network.iface }}</span></td>
+                                <td><span class="badge badge-secondary">{{ network.method }}</span></td>
                             </tr>
                             {% endif %}
                             {% endfor %}

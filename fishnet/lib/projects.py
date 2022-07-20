@@ -24,7 +24,7 @@ SOFTWARE.
 
 import uuid
 
-from fishnet.apps.home.models import Project
+from fishnet.apps.home.models import Project, Host, Network, Session, Flaw
 from fishnet.lib.teams import Teams
 
 
@@ -117,4 +117,8 @@ class Projects:
 
     def delete_project(self, project_uuid):
         if self.check_project(project_uuid):
+            Host.objects.filter(project=project_uuid).delete()
+            Flaw.objects.filter(project=project_uuid).delete()
+            Session.objects.filter(project=project_uuid).delete()
+            Network.objects.filter(project=project_uuid).delete()
             Project.objects.filter(uuid=project_uuid).delete()

@@ -31,7 +31,7 @@
 <script src="/static/assets/js/fishnet.min.js"></script>
 <script>
     function update(url, update, project_uuid, params = {}) {
-        if (!$._data(window, "events").resize[1]) {
+        if (!$._data(window, "events").resize[1] && $('.update-protected:hover').length == 0) {
             var data_params = {
                 project_uuid: project_uuid,
                 update: update,

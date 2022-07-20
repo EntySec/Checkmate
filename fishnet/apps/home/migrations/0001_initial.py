@@ -54,7 +54,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('project', models.CharField(max_length=250)),
                 ('gateway', models.CharField(max_length=250)),
-                ('iface', models.CharField(max_length=250))
+                ('iface', models.CharField(max_length=250)),
+                ('method', models.CharField(max_length=250))
             ]
         ),
         migrations.CreateModel(
