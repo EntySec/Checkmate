@@ -220,13 +220,11 @@ class Network:
         :return QuerySet: sessions available for project
         """
 
-        sessions = QuerySet()
-
         for scanner in self.scanners:
             if hasattr(self.scanners[scanner]['plugin'], 'sessions'):
-                sessions = self.scanners[scanner]['plugin'].sessions(project_uuid)
+                self.scanners[scanner]['plugin'].sessions(project_uuid)
 
-        return sessions
+        return SessionDB.objects.filter(project=project_uuid)
 
     def get_scan(self, project_uuid: str) -> dict:
         """ Get all data available for project.
