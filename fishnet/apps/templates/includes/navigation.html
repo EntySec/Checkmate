@@ -30,7 +30,7 @@
                     <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'topology' in segment %}btn-primary{% endif %}"
                        href="/{{ project.uuid }}/topology" role="button">
                         <i class="fa fa-sitemap mr-2"></i>
-                        <span class="mr-2">Topology</span>
+                        <span class="{% if hosts %}mr-2{% endif %}">Topology</span>
                         {% if hosts %}
                         <span class="badge badge-success">{{ hosts | length }}</span>
                         {% endif %}
@@ -40,7 +40,7 @@
                     <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'services' in segment %}btn-primary{% endif %}"
                        href="/{{ project.uuid }}/services" role="button">
                         <i class="fa fa-eye mr-2"></i>
-                        <span class="mr-2">Services</span>
+                        <span class="{% if services.0 %}mr-2{% endif %}">Services</span>
                         {% if services.0 %}
                         <span class="badge badge-success">{{ services.0 | length }}</span>
                         {% endif %}
@@ -50,7 +50,7 @@
                     <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'flaws' in segment %}btn-primary{% endif %}"
                        href="/{{ project.uuid }}/flaws" role="button">
                         <i class="fa fa-lock-open mr-2"></i>
-                        <span class="mr-2">Flaws</span>
+                        <span class="{% if flaws %}mr-2{% endif %}">Flaws</span>
                         {% if flaws %}
                         <span class="badge badge-danger">{{ flaws | length }}</span>
                         {% endif %}
@@ -60,7 +60,7 @@
                     <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'sessions' in segment %}btn-primary{% endif %}"
                        href="/{{ project.uuid }}/sessions" role="button">
                         <i class="fa fa-user mr-2"></i>
-                        <span class="mr-2">Sessions</span>
+                        <span class="{% if sessions %}mr-2{% endif %}">Sessions</span>
                         {% if sessions %}
                         <span class="badge badge-success">{{ sessions | length }}</span>
                         {% endif %}
