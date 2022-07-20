@@ -39,7 +39,7 @@ class Plugins:
             plugins_path = os.path.split(plugins_path)[0]
 
             if not os.path.isdir(plugins_path):
-                return {}
+                continue
 
             for dest, _, files in os.walk(plugins_path):
                 for file in files:
