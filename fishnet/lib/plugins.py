@@ -27,36 +27,41 @@ import importlib
 
 
 class Plugins:
-    plugins_path = os.path.expanduser('~/.fishnet/plugins/')
+    plugins_paths = [
+        f'{os.path.dirname(os.path.dirname(__file__))}/plugins/',
+        os.path.expanduser('~/.fishnet/plugins/')
+    ]
 
     def load_plugins(self, category):
         plugins = {}
-        plugins_path = os.path.split(self.plugins_path)[0]
 
-        if not os.path.isdir(plugins_path):
-            return {}
+        for plugins_path in self.plugins_paths:
+            plugins_path = os.path.split(plugins_path)[0]
 
-        for dest, _, files in os.walk(plugins_path):
-            for file in files:
-                if file.endswith('py'):
-                    plugin = dest + '/' + file
+            if not os.path.isdir(plugins_path):
+                return {}
 
-                    try:
-                        spec = importlib.util.spec_from_file_location(plugin, plugin)
-                        module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(module)
+            for dest, _, files in os.walk(plugins_path):
+                for file in files:
+                    if file.endswith('py'):
+                        plugin = dest + '/' + file
 
-                        plugin_object = module.FishnetPlugin()
+                        try:
+                            spec = importlib.util.spec_from_file_location(plugin, plugin)
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
 
-                        if plugin_object.details['Category'] == category:
-                            plugin_name = plugin_object.details['Name']
-                            if plugin_name not in plugins:
-                                plugins[plugin_name] = {}
+                            plugin_object = module.FishnetPlugin()
 
-                            plugins[plugin_name]['plugin'] = plugin_object
-                            plugins[plugin_name]['logo'] = os.path.split(dest)[1] + '/plugin.png'
+                            if plugin_object.details['Category'] == category:
+                                plugin_name = plugin_object.details['Name']
+                                if plugin_name not in plugins:
+                                    plugins[plugin_name] = {}
 
-                    except Exception as e:
-                        print(f"Failed to load {file[:-3]} plugin, error: ({str(e)})!")
+                                plugins[plugin_name]['plugin'] = plugin_object
+                                plugins[plugin_name]['logo'] = os.path.split(dest)[1] + '/plugin.png'
+
+                        except Exception as e:
+                            print(f"Failed to load {file[:-3]} plugin, error: ({str(e)})!")
 
         return plugins
