@@ -1,2 +1,3 @@
+recursive-include fishnet/plugins *
 recursive-include fishnet/apps/static *
 recursive-include fishnet/apps/templates *
