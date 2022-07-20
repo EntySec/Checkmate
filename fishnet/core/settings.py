@@ -117,5 +117,6 @@ if not DEBUG:
 else:
     STATICFILES_DIRS = (
         os.path.join(CORE_DIR, 'apps/static'),
-        os.path.expanduser('~/.fishnet/plugins')
+        os.path.expanduser('~/.fishnet/plugins'),
+        os.path.join(CORE_DIR, 'plugins')
     )
