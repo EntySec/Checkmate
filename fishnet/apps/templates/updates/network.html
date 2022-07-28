@@ -211,6 +211,7 @@
                                     <th>DNS</th>
                                     <th>Platform</th>
                                     <th>Vendor</th>
+                                    <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -222,6 +223,15 @@
                                     <td>{{ host.dns }}</td>
                                     <td>{{ host.platform }}</td>
                                     <td>{{ host.vendor }}</td>
+                                    <td>
+                                        <button class="btn btn-link btn-primary btn-lg" data-original-title="Details"
+                                                onclick="fillDetails('/{{ project.uuid }}/network', '{{ host.host }}');"
+                                                data-toggle="modal"
+                                                data-target="#hostDetails"
+                                                title="" type="button">
+                                            <i class="fa fa-external-link-alt"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% endif %}
                                 {% endfor %}

@@ -1,0 +1,18 @@
+<div aria-hidden="true" class="modal fade" id="hostDetails"
+     role="dialog"
+     tabindex="-1">
+    <div class="modal-dialog modal-lg" style="min-width: 90%" role="document">
+        <div class="modal-content" style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Host details
+                </h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" onclick="fillDetails('', '');" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="details-content" class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>

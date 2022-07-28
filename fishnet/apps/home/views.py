@@ -23,10 +23,10 @@ SOFTWARE.
 """
 
 from django import template
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template import loader, Context, Template
 from django.urls import reverse
 
@@ -84,31 +84,45 @@ def allow_edit_profile(request):
     if request.method == 'POST':
         user = get_user_model()
 
-        if 'edit_profile' in request.POST:
-            if 'email' in request.POST:
-                email = request.POST['email']
-                user.objects.filter(username=request.user.username).update(email=email)
+        if 'edit_profile' in request.POST and 'password' in request.POST:
+            password = request.POST['password']
 
-            if 'first_name' in request.POST:
-                first_name = request.POST['first_name']
-                user.objects.filter(username=request.user.username).update(first_name=first_name)
+            if user.objects.get(username=request.user.username).check_password(password):
+                if 'email' in request.POST:
+                    email = request.POST['email']
+                    user.objects.filter(username=request.user.username).update(email=email)
 
-            if 'last_name' in request.POST:
-                last_name = request.POST['last_name']
-                user.objects.filter(username=request.user.username).update(last_name=last_name)
+                if 'first_name' in request.POST:
+                    first_name = request.POST['first_name']
+                    user.objects.filter(username=request.user.username).update(first_name=first_name)
 
-            if 'username' in request.POST:
-                username = request.POST['username']
+                if 'last_name' in request.POST:
+                    last_name = request.POST['last_name']
+                    user.objects.filter(username=request.user.username).update(last_name=last_name)
 
-                if not user.objects.filter(username=username).exists():
-                    user.objects.filter(username=request.user.username).update(username=username)
+                if 'new_password' in request.POST:
+                    new_password = request.POST['new_password']
+                    username = request.user.username
 
-                    settings.change_setting_user(request.user.username, username)
-                    teams.change_team_leader(request.user.username, username)
-                    teams.change_team_user(request.user.username, username)
-                    projects.change_projects_author(request.user.username, username)
+                    u = user.objects.get(username=request.user.username)
+                    u.set_password(new_password)
+                    u.save()
 
-                    request.user.username = username
+                    user = authenticate(username=username, password=password)
+                    login(request, user)
+
+                if 'username' in request.POST:
+                    username = request.POST['username']
+
+                    if not user.objects.filter(username=username).exists():
+                        user.objects.filter(username=request.user.username).update(username=username)
+
+                        settings.change_setting_user(request.user.username, username)
+                        teams.change_team_leader(request.user.username, username)
+                        teams.change_team_user(request.user.username, username)
+                        projects.change_projects_author(request.user.username, username)
+
+                        request.user.username = username
 
 
 def allow_toggle_dark(request):
@@ -257,7 +271,8 @@ def pages(request):
             project_uuid = load_template[-2]
 
             if project_uuid:
-                if projects.check_project_perms(project_uuid, request.user.username):
+                if projects.check_project_perms(project_uuid, request.user.username) and \
+                        not projects.get_project(project_uuid).archived:
                     if request.method == 'POST':
                         if 'project_run' in request.POST:
                             projects.run_project(project_uuid)
@@ -284,10 +299,19 @@ def pages(request):
                                 projects.stop_project(project_uuid)
                                 if projects.get_project(project_uuid).category == 'network':
                                     network.stop_scan(project_uuid)
+
                                 projects.archive_project(project_uuid)
+                                return redirect("/projects")
 
                     if projects.get_project(project_uuid).category == 'network':
                         if request.method == 'POST':
+                            if 'details' in request.POST:
+                                host = request.POST['details']
+                                context = network.get_details(project_uuid, host)
+
+                                html_template = loader.get_template('updates/details.html')
+                                return HttpResponse(html_template.render(context, request))
+
                             if 'session' in request.POST:
                                 if 'command' in request.POST:
                                     result = network.session_execute(
@@ -307,7 +331,7 @@ def pages(request):
                                 network.close_session(project_uuid, request.POST['close_session'])
 
                             if 'attack' in request.POST:
-                                flaw = request.POST['flaw']
+                                flaw = request.POST['attack']
 
                                 options = {
                                     'HOST': request.POST['host'],

@@ -51,7 +51,7 @@ class Network:
     plugins = Plugins()
     projects = Projects()
 
-    scanners = plugins.load_plugins('network')
+    scanners = sort(plugins.load_plugins('network'))
 
     scanner = threading.Thread()
     jobs = {}
@@ -151,7 +151,7 @@ class Network:
         flaw_object = flaws.get(name=flaw)
 
         if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
-            return self.scanners[flaw_object.plugin]['plugin'].attack(flaw_object.module, options)
+            return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
         return ''
 
     def session_execute(self, project_uuid: str, session: int, command: str) -> str:
@@ -208,6 +208,49 @@ class Network:
         ])
         self.job[project_uuid].setDaemon(True)
         self.job[project_uuid].start()
+
+    def get_details(self, project_uuid, host) -> dict:
+        """ Get host details.
+
+        :param str project_uuid: project UUID
+        :param str host: host to get details for
+        :return dict: host details
+        """
+
+        hosts = HostDB.objects.filter(project=project_uuid)
+        host = hosts.get(host=host)
+
+        flaws = FlawDB.objects.filter(project=project_uuid)
+        flaws = flaws.filter(host=host.host)
+
+        flaws_ranks = {}
+
+        for flaw in flaws:
+            if flaw.rank not in flaws_ranks:
+                flaws_ranks[flaw.rank] = 0
+            flaws_ranks[flaw.rank] += 1
+
+        sessions = self.get_sessions(project_uuid).filter(host=host.host)
+
+        sessions_types = {}
+
+        for session in sessions:
+            if session.platform not in sessions_types:
+                sessions_types[session.type] = 0
+            sessions_types[session.type] += 1
+
+        return {
+            'host': host.host,
+            'platform': host.platform,
+            'mac': host.mac,
+            'vendor': host.vendor,
+            'dns': host.dns,
+            'gateway': host.gateway,
+            'flaws': flaws,
+            'flaws_ranks': [list(flaws_ranks.keys()), list(flaws_ranks.values())],
+            'sessions': sessions,
+            'sessions_types': [list(sessions_types.keys()), list(sessions_types.values())]
+        }
 
     def get_sessions(self, project_uuid: str) -> QuerySet:
         """ Get sessions available for project.

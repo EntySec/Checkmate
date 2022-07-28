@@ -43,8 +43,6 @@ class Migration(migrations.Migration):
                 ('port', models.PositiveIntegerField()),
                 ('latitude', models.CharField(max_length=250)),
                 ('longitude', models.CharField(max_length=250)),
-                ('country', models.CharField(max_length=250)),
-                ('address', models.CharField(max_length=250)),
                 ('project', models.CharField(max_length=250)),
                 ('plugin', models.CharField(max_length=250))
             ]
@@ -97,7 +95,6 @@ class Migration(migrations.Migration):
                 ('family', models.CharField(max_length=250)),
                 ('rank', models.CharField(max_length=250)),
                 ('project', models.CharField(max_length=250)),
-                ('module', models.CharField(max_length=250)),
                 ('plugin', models.CharField(max_length=250))
             ]
         ),

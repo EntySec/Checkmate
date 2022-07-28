@@ -6,6 +6,8 @@ Current source: https://github.com/EntySec/Fishnet
 import re
 import sys
 import socket
+import requests
+import ipaddress
 
 from io import StringIO
 
@@ -20,7 +22,9 @@ from hatsploit.lib.sessions import Sessions
 
 class FishnetPlugin(Plugin, Projects, Storage, Sessions):
     runtime = Runtime()
-    runtime.start()
+
+    runtime.check()
+    runtime.start(build_base=True)
 
     modules = Modules()
 
@@ -35,23 +39,28 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
 
         if sessions:
             for session_id in sessions:
-                sessions_db.update_or_create(
-                    project=project_uuid,
-                    plugin=self.details['Name'],
-                    session=session_id,
+                if not sessions_db.filter(project=project_uuid).filter(
+                        plugin=self.details['Name']
+                ).filter(session=session_id).exists():
+                    host = sessions[session_id]['Host']
 
-                    defaults={
-                        'platform': sessions[session_id]['Platform'],
-                        'architecture': sessions[session_id]['Architecture'],
-                        'type': sessions[session_id]['Type'],
-                        'host': sessions[session_id]['Host'],
-                        'port': sessions[session_id]['Port'],
-                        'latitude': 0,
-                        'longitude': 0,
-                        'country': "unidentified",
-                        'address': "unidentified"
-                    }
-                )
+                    if ipaddress.ip_address(host).is_private:
+                        host = requests.get("https://myexternalip.com/json").json()['ip']
+
+                    location = requests.get(f"http://ipinfo.io/{host}").json()
+
+                    sessions_db.create(
+                        project=project_uuid,
+                        plugin=self.details['Name'],
+                        session=session_id,
+                        platform=sessions[session_id]['Platform'],
+                        architecture=sessions[session_id]['Architecture'],
+                        type=sessions[session_id]['Type'],
+                        host=sessions[session_id]['Host'],
+                        port=sessions[session_id]['Port'],
+                        latitude=location['loc'].split(',')[0],
+                        longitude=location['loc'].split(',')[1]
+                    )
 
         for session in sessions_db.all():
             if sessions:
@@ -60,7 +69,11 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             else:
                 sessions_db.filter(session=session.session).delete()
 
-    def attack(self, module, options):
+    def attack(self, flaw, options):
+        self.disable_auto_interaction()
+
+        module = self.modules.search_module(flaw)
+
         self.modules.use_module(module)
         self.runtime.update()
 
@@ -109,8 +122,7 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                     defaults={
                                         'rank': module['Rank'],
                                         'family': module['Platform'],
-                                        'service': host.ports[port],
-                                        'module': module['Module']
+                                        'service': host.ports[port]
                                     }
                                 )
                     else:
@@ -137,8 +149,7 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                 defaults={
                                     'rank': module['Rank'],
                                     'family': module['Platform'],
-                                    'service': service,
-                                    'module': module['Module']
+                                    'service': service
                                 }
                             )
     

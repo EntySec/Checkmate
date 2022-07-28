@@ -29,6 +29,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.29.1/js/jquery.terminal.js"></script>
 
 <script src="/static/assets/js/fishnet.min.js"></script>
+
+<script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/maps.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
+
 <script>
     function update(url, update, project_uuid, params = {}) {
         if (!$._data(window, "events").resize[1] && $('.update-protected:hover').length == 0) {
@@ -62,8 +67,7 @@
             $.ajax(url, {
                 type: 'POST',
                 data: {
-                    flaw: document.getElementById('flaw').value,
-                    attack: '',
+                    attack: document.getElementById('flaw').value,
                     host: document.getElementById('host').value,
                     port: document.getElementById('port').value,
                     csrfmiddlewaretoken: '{{ csrf_token }}'
@@ -78,9 +82,23 @@
         }
     }
 
-	$(".modal-dialog").draggable({
-        handle: ".modal-header"
-    });
+    function fillDetails(url, host) {
+        if (url && host) {
+            $.ajax(url, {
+                type: 'POST',
+                data: {
+                    details: host,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    $('#details-content').html(data);
+                }
+            });
+        } else {
+            data = '<div id="details-content" class="modal-body"></div>'
+            $('#details-content').html(data);
+        }
+    }
 
     function editTeam(team_name) {
         document.getElementById('edit_team_name').value = team_name;
@@ -93,37 +111,13 @@
         document.getElementById('port').value = port;
     }
 
+    $(".modal-dialog").draggable({
+        handle: ".modal-header"
+    });
+
 	$(document).ready(function() {
 		$('#teams-table').DataTable({
 			"pageLength": 5,
-		});
-	});
-
-	$('#delete_team_permissions_error').on('click', function(){
-		var placementFrom = 'bottom';
-		var placementAlign = 'right';
-		var state = 'danger';
-		var style = 'withicon';
-		var content = {};
-
-		content.message = 'Failed to delete team due to that you are not the leader';
-		content.title = 'Permission denied';
-		if (style == "withicon") {
-			content.icon = 'fa fa-bell';
-		} else {
-			content.icon = 'none';
-		}
-		content.url = 'index.html';
-		content.target = '_blank';
-
-		$.notify(content,{
-			type: state,
-			placement: {
-				from: placementFrom,
-				align: placementAlign
-			},
-			time: 1000,
-			delay: 1,
 		});
 	});
 </script>

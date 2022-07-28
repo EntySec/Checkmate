@@ -9,89 +9,94 @@
             </ul>
         </div>
         <div class="row">
-            <div class="col-md-5">
+            <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <div class="card-head-row">
-                            <div class="card-title">Top sessions</div>
-                            <div class="card-tools">
-                                <button id="sessions-image" class="btn btn-info btn-border btn-round btn-sm">
-                                    <span class="btn-label">
-                                        <i class="fa fa-file-export mr-2"></i>
-                                    </span>
-                                    Export
-                                </button>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div id="sessions-globe" class="update-protected" style="height: 50rem;"></div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="update-protected chart-container-sm">
-                            <canvas id="sessions-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-7">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <h4 class="card-title">Sessions opened</h4>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="update-protected table-responsive">
-                            <table class="display table table-hover" id="sessions-table">
-                                <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Platform</th>
-                                    <th>Type</th>
-                                    <th>Host</th>
-                                    <th>Port</th>
-                                    <th>Latitude</th>
-                                    <th>Longitude</th>
-                                    <th>Terminal</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for session in sessions %}
-                                {% if session.project == project.uuid %}
-                                <tr>
-                                    <td>{{ session.session }}</td>
-                                    <td>{{ session.platform }}</td>
-                                    <td>{{ session.type }}</td>
-                                    <td>{{ session.host }}</td>
-                                    <td>{{ session.port }}</td>
-                                    <td>{{ session.latitude }}</td>
-                                    <td>{{ session.longitude }}</td>
-                                    <td>
-                                        <div class="form-button-action">
-                                            <button class="btn btn-link btn-dark"
-                                                    data-original-title="Terminal"
-                                                    onclick="setSession({{ session.session }});"
-                                                    data-target="#terminal"
-                                                    data-toggle="modal"
-                                                    title="" type="submit"
-                                                    value="{{ session.session }}">
-                                                <i class="fa fa-terminal"></i>
-                                            </button>
-                                            <form method="post">
-                                                {% csrf_token %}
-                                                <button class="btn btn-link btn-danger"
-                                                        data-original-title="Close"
-                                                        data-toggle="tooltip" name="close_session"
-                                                        title="" type="submit"
-                                                        value="{{ session.session }}">
-                                                    <i class="fa fa-times"></i>
+                            <div class="col-md-5">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="card-head-row">
+                                            <div class="card-title">Top sessions</div>
+                                            <div class="card-tools">
+                                                <button id="sessions-image" class="btn btn-info btn-border btn-round btn-sm">
+                                                    <span class="btn-label">
+                                                        <i class="fa fa-file-export mr-2"></i>
+                                                    </span>
+                                                    Export
                                                 </button>
-                                            </form>
+                                            </div>
                                         </div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="update-protected chart-container-sm">
+                                            <canvas id="sessions-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h4 class="card-title">Sessions opened</h4>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="update-protected table-responsive">
+                                            <table class="display table table-hover" id="sessions-table">
+                                                <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Platform</th>
+                                                    <th>Type</th>
+                                                    <th>Host</th>
+                                                    <th>Port</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for session in sessions %}
+                                                {% if session.project == project.uuid %}
+                                                <tr>
+                                                    <td>{{ session.session }}</td>
+                                                    <td>{{ session.platform }}</td>
+                                                    <td>{{ session.type }}</td>
+                                                    <td>{{ session.host }}</td>
+                                                    <td>{{ session.port }}</td>
+                                                    <td>
+                                                        <div class="form-button-action">
+                                                            <button class="btn btn-link btn-dark"
+                                                                    data-original-title="Terminal"
+                                                                    onclick="setSession({{ session.session }});"
+                                                                    data-target="#terminal"
+                                                                    data-toggle="modal"
+                                                                    title="" type="submit"
+                                                                    value="{{ session.session }}">
+                                                                <i class="fa fa-terminal"></i>
+                                                            </button>
+                                                            <form method="post">
+                                                                {% csrf_token %}
+                                                                <button class="btn btn-link btn-danger"
+                                                                        data-original-title="Close"
+                                                                        data-toggle="tooltip" name="close_session"
+                                                                        title="" type="submit"
+                                                                        value="{{ session.session }}">
+                                                                    <i class="fa fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -115,7 +120,11 @@
                 <p class="small">Here you can execute commands on session</p>
                 <div class="row">
                     <div class="col-md-12">
-                        <div id="session_terminal" style="border: 3px solid white; border-radius: 10px; height: 100%; width: 100%;" class="terminal"></div>
+                        <div class="row py-3 justify-content-center">
+                            <div class="update-protected d-flex justify-content-center">
+								<div id="session_terminal" style="border: 3px solid white; border-radius: 10px; height: 100%; width: 100%;" class="terminal"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,6 +136,55 @@
 </div>
 
 <script>
+var chart = am4core.create("sessions-globe", am4maps.MapChart);
+
+chart.geodata = am4geodata_worldLow;
+chart.projection = new am4maps.projections.Orthographic();
+chart.deltaLatitude = -30;
+chart.panBehavior = "rotateLongLat";
+chart.marginTop = 20;
+chart.marginBottom = 20;
+
+var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+polygonSeries.useGeodata = true;
+polygonSeries.north = 90;
+polygonSeries.south = -90;
+
+var polygonTemplate = polygonSeries.mapPolygons.template;
+polygonTemplate.tooltipText = "{name}";
+polygonTemplate.fill = am4core.color("#1582e8");
+polygonTemplate.stroke = am4core.color("#aaa");
+polygonTemplate.strokeWidth = 1;
+
+var imageSeries = chart.series.push(new am4maps.MapImageSeries());
+
+var imageSeriesTemplate = imageSeries.mapImages.template;
+var circle = imageSeriesTemplate.createChild(am4core.Circle);
+circle.radius = 4;
+circle.fill = am4core.color("#B27799");
+circle.stroke = am4core.color("#FFFFFF");
+circle.strokeWidth = 2;
+circle.nonScaling = true;
+circle.tooltipText = "{title}";
+
+imageSeriesTemplate.propertyFields.latitude = "latitude";
+imageSeriesTemplate.propertyFields.longitude = "longitude";
+
+imageSeries.data = [
+{% for session in sessions %}
+{% if session.project == project.uuid %}
+{
+  "latitude": {{ session.latitude }},
+  "longitude": {{ session.longitude }},
+  "title": {{ session.host }}
+},
+{% endif %}
+{% endfor %}
+];
+
+var hs = polygonTemplate.states.create("hover");
+hs.properties.fill = am4core.color("#1572e8");
+
 function setSession(session) {
     self.session = session;
 }
