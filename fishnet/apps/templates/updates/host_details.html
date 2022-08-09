@@ -1,4 +1,4 @@
-<div id="details-content" class="modal-body">
+<div id="host-details-content" class="modal-body">
     <div class="row">
         <div class="col-md-4">
             <div class="card">
@@ -8,29 +8,29 @@
                 <div class="card-body">
                     <div class="d-flex">
                         <div class="avatar">
-                            <img src="/static/assets/img/{{ platform }}.png" alt="..." class="avatar-img">
+                            <img draggable="false" src="/static/assets/img/{{ platform }}.png" alt="..." class="avatar-img">
                         </div>
                         <div class="flex-1 pt-1 ml-2">
                             <h6 class="fw-bold mb-1">Platform</h6>
                             <small class="text-muted">{{ platform }}</small>
                         </div>
                     </div>
-		    {% if vendor %}
-		    <div class="separator-dashed"></div>
-		    <div class="d-flex">
+		            {% if vendor %}
+		            <div class="separator-dashed"></div>
+		            <div class="d-flex">
                         <div class="avatar">
-                            <img src="/static/assets/img/unidentified.png" alt="..." class="avatar-img">
+                            <img draggable="false" src="/static/assets/img/unidentified.png" alt="..." class="avatar-img">
                         </div>
                         <div class="flex-1 pt-1 ml-2">
                             <h6 class="fw-bold mb-1">Vendor</h6>
                             <small class="text-muted">{{ vendor }}</small>
                         </div>
                     </div>
-		    {% endif %}
-		    <div class="separator-dashed"></div>
-		    <div class="d-flex">
+		            {% endif %}
+                    <div class="separator-dashed"></div>
+		            <div class="d-flex">
                         <div class="avatar">
-                            <img src="/static/assets/img/network.png" alt="..." class="avatar-img">
+                            <img draggable="false" src="/static/assets/img/network.png" alt="..." class="avatar-img">
                         </div>
                         <div class="flex-1 pt-1 ml-2">
                             <h6 class="fw-bold mb-1">Gateway</h6>
@@ -62,18 +62,25 @@
                 </div>
             </div>
         </div>
-	<div class="col-md-4">
-	    <div class="card card-primary bg-primary-gradient">
-	        <div class="card-body">
-	            <h4 class="mt-3 b-b1 pb-2 mb-4 fw-bold">Active sessions</h4>
-		    <h1 class="mb-4 fw-bold">{{ sessions | length }}</h1>
-		    <h4 class="mt-3 b-b1 pb-2 mb-5 fw-bold">Sessions types</h4>
-		    <div class="update-protected chart-container">
+	    <div class="col-md-4">
+	        <div class="card card-primary bg-primary-gradient">
+	            <div class="card-body">
+	                <h4 class="mt-3 b-b1 pb-2 mb-4 fw-bold">Active sessions</h4>
+		            <h1 class="mb-4 fw-bold">{{ sessions | length }}</h1>
+		            <h4 class="mt-3 b-b1 pb-2 mb-5 fw-bold">Sessions types</h4>
+                    {% if sessions_types.0 %}
+		            <div class="update-protected chart-container">
                         <canvas id="sessions-1-chart"></canvas>
                     </div>
-		</div>
+                    {% endif %}
+		        </div>
+	        </div>
 	    </div>
-	</div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            
+        </div>
     </div>
 </div>
 
@@ -93,7 +100,7 @@ var flaws1Chart = new Chart(flaws1Object, {
     data: {
         datasets: [{
             data: {{ flaws_ranks.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ flaws_ranks.0 | safe }}
@@ -131,7 +138,7 @@ var sessions1Chart = new Chart(sessions1Object, {
     data: {
         datasets: [{
             data: {{ sessions_types.1 }},
-            backgroundColor: ['#00FF00', '#ff0000']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ sessions_types.0 | safe }}

@@ -58,13 +58,13 @@
                                     </td>
                                     <td>
                                         {% if flaw.rank == 'high' %}
-                                        <span class="badge badge-danger"> High</span>
+                                        <span class="badge badge-danger" style="border-radius: 4px;"> High</span>
                                         {% elif flaw.rank == 'medium' %}
-                                        <span class="badge badge-warning"> Medium</span>
+                                        <span class="badge badge-warning" style="border-radius: 4px;"> Medium</span>
                                         {% elif flaw.rank == 'low' %}
-                                        <span class="badge badge-success"> Low</span>
+                                        <span class="badge badge-success" style="border-radius: 4px;"> Low</span>
                                         {% elif flaw.rank == 'info' %}
-                                        <span class="badge badge-info"> Info</span>
+                                        <span class="badge badge-info" style="border-radius: 4px;"> Info</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -74,13 +74,15 @@
                                                     title="" type="button">
                                                 <i class="fa fa-external-link-alt"></i>
                                             </button>
+                                            {% if flaw.exploitable %}
                                             <button class="btn btn-link btn-danger btn-lg" data-original-title="Attack"
-                                                    onclick="attackModal('{{ flaw.name }}', '{{ flaw.host }}', '{{ flaw.port }}');"
+                                                    onclick="fillAttackDetails('/{{ project.uuid }}/network', '{{ flaw.name }}', '{{ flaw.host }}', '{{ flaw.port }}');"
                                                     data-toggle="modal"
                                                     data-target="#attackModal"
                                                     title="" type="button">
                                                 <i class="fa fa-bomb"></i>
                                             </button>
+                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -138,7 +140,7 @@ var flawsChart = new Chart(flawsObject, {
     data: {
         datasets: [{
             data: {{ flaws_ranks.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ flaws_ranks.0 | safe }}

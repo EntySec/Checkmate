@@ -59,7 +59,8 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                         host=sessions[session_id]['Host'],
                         port=sessions[session_id]['Port'],
                         latitude=location['loc'].split(',')[0],
-                        longitude=location['loc'].split(',')[1]
+                        longitude=location['loc'].split(',')[1],
+                        country=location['country']
                     )
 
         for session in sessions_db.all():
@@ -68,6 +69,25 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                     sessions_db.filter(session=session.session).delete()
             else:
                 sessions_db.filter(session=session.session).delete()
+
+    def flaw(self, flaw):
+        module = self.modules.search_module(flaw)
+        object = self.modules.get_module_object(module)
+
+        return {
+            'name': object['Name'],
+            'description': object['Description'],
+            'platform': object['Platform'],
+            'rank': object['Rank']
+        }
+
+    def options(self, flaw):
+        module = self.modules.search_module(flaw)
+
+        self.modules.use_module(module)
+        self.runtime.update()
+
+        return self.modules.get_current_module().options
 
     def attack(self, flaw, options):
         self.disable_auto_interaction()
@@ -122,7 +142,8 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                     defaults={
                                         'rank': module['Rank'],
                                         'family': module['Platform'],
-                                        'service': host.ports[port]
+                                        'service': host.ports[port],
+                                        'exploitable': True
                                     }
                                 )
                     else:
@@ -149,7 +170,8 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                 defaults={
                                     'rank': module['Rank'],
                                     'family': module['Platform'],
-                                    'service': service
+                                    'service': service,
+                                    'exploitable': True
                                 }
                             )
     

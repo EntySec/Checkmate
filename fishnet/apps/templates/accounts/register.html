@@ -15,12 +15,11 @@
                 </li>
             </ul>
         </div>
-        <div class="row">
-            <div class="col-md-12">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
-
                             {% if msg %}
                             <span class="text-info">{{ msg | safe }}</span>
                             {% else %}
@@ -28,16 +27,14 @@
                                 Complete your credentials 
                             </span>
                             {% endif %}
-
                         </div>
                     </div>
 
                     <form action="" method="post">
                         {% csrf_token %}
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 col-lg-4">
-
+                            <div class="row justify-content-center">
+                                <div class="col-md-10">
                                     <div class="form-group">
                                         <div class="input-group mb-3">
                                             <div class="input-group-prepend">
@@ -49,7 +46,6 @@
                                         </div>
                                     </div>
                                     <span class="text-danger">{{ form.username.errors }}</span>
-
                                     <div class="form-group">
                                         <div class="input-group mb-3">
                                             <div class="input-group-prepend">
@@ -61,7 +57,6 @@
                                         </div>
                                     </div>
                                     <span class="text-danger">{{ form.email.errors }}</span>
-
                                     <div class="form-group">
                                         <div class="input-group mb-3">
                                             <div class="input-group-prepend">
@@ -73,7 +68,6 @@
                                         </div>
                                     </div>
                                     <span class="text-danger">{{ form.password1.errors }}</span>
-
                                     <div class="form-group">
                                         <div class="input-group mb-3">
                                             <div class="input-group-prepend">
@@ -85,7 +79,6 @@
                                         </div>
                                     </div>
                                     <span class="text-danger">{{ form.password2.errors }}</span>
-
                                 </div>
                             </div>
                         </div>

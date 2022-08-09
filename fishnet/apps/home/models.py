@@ -35,6 +35,7 @@ class Session(models.Model):
     port = models.PositiveIntegerField()
     latitude = models.CharField(max_length=250)
     longitude = models.CharField(max_length=250)
+    country = models.CharField(max_length=250)
     project = models.CharField(max_length=250)
     plugin = models.CharField(max_length=250)
 
@@ -93,6 +94,7 @@ class Flaw(models.Model):
     rank = models.CharField(max_length=250)
     project = models.CharField(max_length=250)
     plugin = models.CharField(max_length=250)
+    exploitable = models.BooleanField()
 
     def __str__(self):
         return self.name

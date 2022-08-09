@@ -1,7 +1,7 @@
 <div class="main-header">
     <div class="logo-header" data-background-color="{% if dark_mode %}dark2{% else %}white{% endif %}">
         <a class="logo" href="/">
-            <img alt="navbar brand" class="navbar-brand" height=85% src="/static/assets/img/logo.svg" width=85%>
+            <img draggable="false" alt="navbar brand" class="navbar-brand" height=85% src="/static/assets/img/logo.svg" width=85%>
         </a>
         {% if not project and request.user.is_authenticated %}
         <div class="nav-toggle">
@@ -94,7 +94,7 @@
                                 <div class="notif-center">
                                     <a href="#">
                                         <div class="notif-img">
-                                            <img alt="Img Profile" src="/static/assets/img/icon.png">
+                                            <img draggable="false" alt="Img Profile" src="/static/assets/img/icon.png">
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Fishnet</span>
@@ -162,6 +162,8 @@
                        href="/projects" role="button">
                         <i class="fa fa-eject"></i>
                     </a>
+                </li>
+                <li class="nav-item dropdown hidden-caret">
                     <a aria-expanded="false" aria-haspopup="true" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown"
                        href="#" id="projectDropdown" role="button">
                         <i class="fa fa-box mr-2"></i>
@@ -208,13 +210,13 @@
                 <li class="nav-item dropdown hidden-caret">
                     <a aria-expanded="false" class="dropdown-toggle profile-pic" data-toggle="dropdown" href="#">
                         <div class="avatar-sm">
-                            <img alt="..." class="avatar-img rounded-circle" src="/static/assets/img/icon.png">
+                            <img draggable="false" alt="..." class="avatar-img rounded-circle" src="/static/assets/img/icon.png">
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-user animated fadeIn">
                         <li>
                             <div class="user-box">
-                                <div class="avatar-lg"><img alt="image profile" class="avatar-img rounded"
+                                <div class="avatar-lg"><img draggable="false" alt="image profile" class="avatar-img rounded"
                                                             src="/static/assets/img/icon.png"></div>
                                 <div class="u-text">
                                     <h4>

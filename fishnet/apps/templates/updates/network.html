@@ -150,29 +150,33 @@
                                             </td>
                                             <td>
                                                 {% if flaw.rank == 'high' %}
-                                                <span class="badge badge-danger"> High</span>
+                                                <span class="badge badge-danger" style="border-radius: 4px;"> High</span>
                                                 {% elif flaw.rank == 'medium' %}
-                                                <span class="badge badge-warning"> Medium</span>
+                                                <span class="badge badge-warning" style="border-radius: 4px;"> Medium</span>
                                                 {% elif flaw.rank == 'low' %}
-                                                <span class="badge badge-success"> Low</span>
+                                                <span class="badge badge-success" style="border-radius: 4px;"> Low</span>
                                                 {% elif flaw.rank == 'info' %}
-                                                <span class="badge badge-info"> Info</span>
+                                                <span class="badge badge-info" style="border-radius: 4px;"> Info</span>
                                                 {% endif %}
                                             </td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <button class="btn btn-link btn-primary btn-lg" data-original-title="Show"
-                                                            data-toggle="tooltip"
+                                                    <button class="btn btn-link btn-primary btn-lg" data-original-title="Details"
+                                                            onclick="fillFlawDetails('/{{ project.uuid }}/network', '{{ flaw.name }}');"
+                                                            data-toggle="modal"
+                                                            data-target="#flawDetails"
                                                             title="" type="button">
                                                         <i class="fa fa-external-link-alt"></i>
                                                     </button>
+                                                    {% if flaw.exploitable %}
                                                     <button class="btn btn-link btn-danger btn-lg" data-original-title="Attack"
-                                                            onclick="attackModal('{{ flaw.name }}', '{{ flaw.host }}', '{{ flaw.port }}');"
+                                                            onclick="fillAttackDetails('/{{ project.uuid }}/network', '{{ flaw.name }}', '{{ flaw.host }}', '{{ flaw.port }}');"
                                                             data-toggle="modal"
                                                             data-target="#attackModal"
                                                             title="" type="button">
                                                         <i class="fa fa-bomb"></i>
                                                     </button>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                         </tr>
@@ -194,7 +198,17 @@
             </div>
         </div>
         <div class="row row-card-no-pd">
-            <div class="col-md-12">
+            <div class="col-md-4">
+	            <div class="card card-primary bg-primary-gradient">
+	                <div class="card-body">
+	                    <h4 class="mt-3 b-b1 pb-2 mb-4 fw-bold">Active sessions</h4>
+		                <h1 class="mb-4 fw-bold">{{ sessions | length }}</h1>
+                        <h4 class="mt-3 b-b1 pb-2 mb-5 fw-bold">Sessions globe</h4>
+                        <div id="sessions-globe" class="update-protected" style="height: 50rem;"></div>
+		            </div>
+	            </div>
+	        </div>
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
@@ -225,7 +239,7 @@
                                     <td>{{ host.vendor }}</td>
                                     <td>
                                         <button class="btn btn-link btn-primary btn-lg" data-original-title="Details"
-                                                onclick="fillDetails('/{{ project.uuid }}/network', '{{ host.host }}');"
+                                                onclick="fillHostDetails('/{{ project.uuid }}/network', '{{ host.host }}');"
                                                 data-toggle="modal"
                                                 data-target="#hostDetails"
                                                 title="" type="button">
@@ -246,6 +260,65 @@
 </div>
 
 <script>
+var chart = am4core.create("sessions-globe", am4maps.MapChart);
+
+chart.geodata = am4geodata_worldLow;
+chart.projection = new am4maps.projections.Orthographic();
+chart.deltaLatitude = -30;
+chart.panBehavior = "rotateLongLat";
+chart.marginTop = 20;
+chart.marginBottom = 20;
+
+var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+polygonSeries.useGeodata = true;
+polygonSeries.north = 90;
+polygonSeries.south = -90;
+
+var polygonTemplate = polygonSeries.mapPolygons.template;
+polygonTemplate.tooltipText = "{name}";
+polygonTemplate.fill = am4core.color("#1582e8");
+polygonTemplate.stroke = am4core.color("#aaa");
+polygonTemplate.strokeWidth = 1;
+
+var imageSeries = chart.series.push(new am4maps.MapImageSeries());
+
+var imageSeriesTemplate = imageSeries.mapImages.template;
+var circle = imageSeriesTemplate.createChild(am4core.Circle);
+circle.radius = 4;
+circle.fill = am4core.color("#B27799");
+circle.stroke = am4core.color("#FFFFFF");
+circle.strokeWidth = 2;
+circle.nonScaling = true;
+circle.tooltipText = "{title}";
+
+imageSeriesTemplate.propertyFields.latitude = "latitude";
+imageSeriesTemplate.propertyFields.longitude = "longitude";
+
+imageSeries.data = [
+{% for session in sessions %}
+{% if session.project == project.uuid %}
+{
+  "latitude": {{ session.latitude }},
+  "longitude": {{ session.longitude }},
+  "title": "{{ session.host }}"
+},
+{% endif %}
+{% endfor %}
+];
+
+var hs = polygonTemplate.states.create("hover");
+hs.properties.fill = am4core.color("#1572e8");
+
+chart.animate({
+  key: "rotationX",
+  from: 0,
+  to: 360,
+  duration: 30000,
+  loops: Infinity
+});
+
+chart.appear(1000, 100);
+
 $('#dashboard-image').on('click', function() {
     html2canvas(document.querySelector("#dashboard")).then(canvas => {
         var link = document.createElement("a");
@@ -469,7 +542,7 @@ var platformsChart = new Chart(platformsObject, {
     data: {
         datasets: [{
             data: {{ platforms.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ platforms.0 | safe }}
@@ -507,7 +580,7 @@ var flawsChart = new Chart(flawsObject, {
     data: {
         datasets: [{
             data: {{ flaws_ranks.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ flaws_ranks.0 | safe }}
@@ -527,6 +600,82 @@ var flawsChart = new Chart(flawsObject, {
         legend: {
             display: false,
             position: 'top'
+        },
+        layout: {
+            padding: {
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20
+            }
+        }
+    }
+});
+
+var sessionsPlatformsObject = document.getElementById('sessions-platforms-chart').getContext('2d');
+var sessionsPlatformsChart = new Chart(sessionsPlatformsObject, {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: {{ session_platforms.1 }},
+            backgroundColor: {{ colors | safe }}
+        }],
+
+        labels: {{ session_platforms.0 | safe }}
+    },
+    options: {
+        {% if not animate %}
+        animation: {
+            duration: 0
+        },
+        hover: {
+            animationDuration: 0
+        },
+        responsiveAnimationDuration: 0,
+        {% endif %}
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+            display: false,
+            position: 'left'
+        },
+        layout: {
+            padding: {
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20
+            }
+        }
+    }
+});
+
+var sessionsCountriesObject = document.getElementById('sessions-countries-chart').getContext('2d');
+var sessionsCountriesChart = new Chart(sessionsCountriesObject, {
+    type: 'doughnut',
+    data: {
+        datasets: [{
+            data: {{ session_countries.1 }},
+            backgroundColor: {{ colors | safe }}
+        }],
+
+        labels: {{ session_countries.0 | safe }}
+    },
+    options: {
+        {% if not animate %}
+        animation: {
+            duration: 0
+        },
+        hover: {
+            animationDuration: 0
+        },
+        responsiveAnimationDuration: 0,
+        {% endif %}
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+            display: false,
+            position: 'left'
         },
         layout: {
             padding: {

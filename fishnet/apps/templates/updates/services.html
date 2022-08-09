@@ -185,7 +185,7 @@ var servicesChart = new Chart(servicesObject, {
     data: {
         datasets: [{
             data: {{ services.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff'].reverse()
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ services.0 | safe }}

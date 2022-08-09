@@ -210,7 +210,7 @@ var platformsChart = new Chart(platformsObject, {
     data: {
         datasets: [{
             data: {{ platforms.1 }},
-            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d', '#007bff']
+            backgroundColor: {{ colors | safe }}
         }],
 
         labels: {{ platforms.0 | safe }}

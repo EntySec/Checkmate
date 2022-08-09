@@ -305,11 +305,37 @@ def pages(request):
 
                     if projects.get_project(project_uuid).category == 'network':
                         if request.method == 'POST':
-                            if 'details' in request.POST:
-                                host = request.POST['details']
-                                context = network.get_details(project_uuid, host)
+                            if 'host_details' in request.POST:
+                                host = request.POST['host_details']
+                                context = network.get_host_details(project_uuid, host)
 
-                                html_template = loader.get_template('updates/details.html')
+                                html_template = loader.get_template('updates/host_details.html')
+                                return HttpResponse(html_template.render(context, request))
+
+                            if 'flaw_details' in request.POST:
+                                flaw = request.POST['flaw_details']
+                                context = network.get_flaw_details(project_uuid, flaw)
+
+                                html_template = loader.get_template('updates/flaw_details.html')
+                                return HttpResponse(html_template.render(context, request))
+
+                            if 'attack_details' in request.POST:
+                                flaw = request.POST['attack_details']
+                                context = network.get_flaw_options(project_uuid, flaw)
+
+                                context.update({
+                                    'flaw': flaw
+                                })
+
+                                for option in context['options']:
+                                    if option.lower() == 'host':
+                                        context['options'][option] = request.POST['host']
+                                    elif option.lower() == 'port':
+                                        context['options'][option] = request.POST['port']
+
+                                context['options'] = context['options'].items()
+
+                                html_template = loader.get_template('updates/attack.html')
                                 return HttpResponse(html_template.render(context, request))
 
                             if 'session' in request.POST:
@@ -332,11 +358,13 @@ def pages(request):
 
                             if 'attack' in request.POST:
                                 flaw = request.POST['attack']
+                                options = network.get_flaw_options(project_uuid, flaw)['options']
 
-                                options = {
-                                    'HOST': request.POST['host'],
-                                    'PORT': request.POST['port']
-                                }
+                                for option in list(options):
+                                    if option in request.POST:
+                                        options.update({
+                                            option: request.POST[option]
+                                        })
 
                                 try:
                                     result = network.run_attack(project_uuid, flaw, options)

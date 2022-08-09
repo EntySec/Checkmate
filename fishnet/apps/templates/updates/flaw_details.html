@@ -1,0 +1,42 @@
+<div id="flaw-details-content" class="modal-body">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Flaw specification</div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-1 pt-1 ml-2">
+                            <h6 class="fw-bold mb-1">
+                                {{ name }}
+                                {% if rank == 'high' %}
+                                <span class="text-danger pl-2"> High</span>
+                                {% elif rank == 'medium' %}
+                                <span class="text-warning pl-2"> Medium</span>
+                                {% elif rank == 'low' %}
+                                <span class="text-success pl-2"> Low</span>
+                                {% elif rank == 'info' %}
+                                <span class="text-info pl-2"> Info</span>
+                                {% endif %}
+                            </h6>
+                            <small class="text-muted">{{ description }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title justify-content-center">Targets</div>
+                </div>
+                <div class="card-body justify-content-center">
+                    <center>
+                        <img draggable="false" width="100px" height="100px" src="/static/assets/img/{{ platform }}.png">
+                    </center>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
