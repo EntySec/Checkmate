@@ -17,57 +17,8 @@
 
         {% if request.user.is_authenticated %}
         <div class="container-fluid">
-            {% if project %}
-            <ul class="navbar-nav topbar-nav ml-md-auto">
-                <li class="nav-item hidden-caret">
-                    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'network' in segment %}btn-primary{% endif %}"
-                       href="/{{ project.uuid }}/network" role="button">
-                        <i class="fa fa-wifi mr-2"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item hidden-caret">
-                    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'topology' in segment %}btn-primary{% endif %}"
-                       href="/{{ project.uuid }}/topology" role="button">
-                        <i class="fa fa-sitemap mr-2"></i>
-                        <span class="{% if hosts %}mr-2{% endif %}">Topology</span>
-                        {% if hosts %}
-                        <span class="badge badge-success">{{ hosts | length }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item hidden-caret">
-                    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'services' in segment %}btn-primary{% endif %}"
-                       href="/{{ project.uuid }}/services" role="button">
-                        <i class="fa fa-eye mr-2"></i>
-                        <span class="{% if services.0 %}mr-2{% endif %}">Services</span>
-                        {% if services.0 %}
-                        <span class="badge badge-success">{{ services.0 | length }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item hidden-caret">
-                    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'flaws' in segment %}btn-primary{% endif %}"
-                       href="/{{ project.uuid }}/flaws" role="button">
-                        <i class="fa fa-lock-open mr-2"></i>
-                        <span class="{% if flaws %}mr-2{% endif %}">Flaws</span>
-                        {% if flaws %}
-                        <span class="badge badge-danger">{{ flaws | length }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item hidden-caret">
-                    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'sessions' in segment %}btn-primary{% endif %}"
-                       href="/{{ project.uuid }}/sessions" role="button">
-                        <i class="fa fa-user mr-2"></i>
-                        <span class="{% if sessions %}mr-2{% endif %}">Sessions</span>
-                        {% if sessions %}
-                        <span class="badge badge-success">{{ sessions | length }}</span>
-                        {% endif %}
-                    </a>
-                </li>
+            <ul class="navbar-nav topbar-nav ml-md-auto" id="navigation-content">
             </ul>
-            {% endif %}
             <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
                 {% if project and project.running %}
                 <li class="nav-item dropdown hidden-caret">

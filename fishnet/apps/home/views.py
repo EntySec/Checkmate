@@ -46,6 +46,8 @@ def realtime_update(request):
 
     if request.method == 'POST':
         if 'update' in request.POST:
+            load_template = request.path.split('/')
+            endpoint = load_template[-1]
             update = request.POST['update']
 
             if request.POST['project_uuid']:
@@ -54,7 +56,21 @@ def realtime_update(request):
                 if projects.get_project(project_uuid).category == 'network':
                     context = network.get_scan(project_uuid)
 
+                    if endpoint == 'attack':
+                        context.update({
+                            'all_flaws': network.get_flaws(),
+                        })
+
+                        if 'flaw_options' in request.POST:
+                            flaw = request.POST['flaw_options']
+                            context.update({
+                                'current_flaw': flaw,
+                                'options': network.get_flaw_options(project_uuid, flaw).items(),
+                                'all_payloads': network.get_payloads(project_uuid, flaw)
+                            })
+
                 context.update({
+                    'segment': endpoint,
                     'project': project,
                     'dark_mode': settings.get_settings(request.user.username).dark,
                     'animate': request.POST['animate'] if 'animate' in request.POST else False
@@ -64,7 +80,7 @@ def realtime_update(request):
                 return HttpResponse(html_template.render(context, request))
 
             context.update({
-                'segment': update,
+                'segment': endpoint,
                 'dark_mode': settings.get_settings(request.user.username).dark,
                 'teams': teams.get_teams(),
                 'users': get_user_model().objects.all(),
@@ -174,6 +190,10 @@ def index_page(request):
     allow_manage_teams(request)
     allow_create_team(request)
     allow_edit_profile(request)
+
+    update = realtime_update(request)
+    if update:
+        return update
 
     context.update({
         'dark_mode': settings.get_settings(request.user.username).dark,
@@ -321,11 +341,10 @@ def pages(request):
 
                             if 'attack_details' in request.POST:
                                 flaw = request.POST['attack_details']
-                                context = network.get_flaw_options(project_uuid, flaw)
-
-                                context.update({
+                                context = {
+                                    'options': network.get_flaw_options(project_uuid, flaw),
                                     'flaw': flaw
-                                })
+                                }
 
                                 for option in context['options']:
                                     if option.lower() == 'host':
@@ -335,7 +354,7 @@ def pages(request):
 
                                 context['options'] = context['options'].items()
 
-                                html_template = loader.get_template('updates/attack.html')
+                                html_template = loader.get_template('updates/attack_details.html')
                                 return HttpResponse(html_template.render(context, request))
 
                             if 'session' in request.POST:
@@ -356,9 +375,22 @@ def pages(request):
                             if 'close_session' in request.POST:
                                 network.close_session(project_uuid, request.POST['close_session'])
 
+                            if 'set_option' in request.POST:
+                                flaw = request.POST['set_option']
+                                option = request.POST['option']
+                                value = request.POST['value']
+
+                                network.set_option(project_uuid, flaw, option, value)
+                                file = Template('')
+
+                                return HttpResponse(file.render(
+                                    Context({
+                                    })
+                                ))
+
                             if 'attack' in request.POST:
                                 flaw = request.POST['attack']
-                                options = network.get_flaw_options(project_uuid, flaw)['options']
+                                options = network.get_flaw_options(project_uuid, flaw)
 
                                 for option in list(options):
                                     if option in request.POST:
@@ -378,7 +410,7 @@ def pages(request):
                                 except Exception as e:
                                     result = f"[-] An error occured: {str(e)}!"
 
-                                file = Template('<div class="form-group" id="attack-log"><pre>{{ result }}</pre></div>')
+                                file = Template('<pre>{{ result }}</pre>')
 
                                 return HttpResponse(file.render(
                                     Context({
@@ -386,7 +418,6 @@ def pages(request):
                                     })
                                 ))
 
-                        context.update(network.get_scan(project_uuid))
                     project = projects.get_project(project_uuid)
                 else:
                     raise template.TemplateDoesNotExist(endpoint)

@@ -1,0 +1,100 @@
+<div class="card">
+    <div class="card-header">
+        <div class="card-head-row">
+            <div class="card-title">Attack options</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mt-2">
+            {% for option, value in options %}
+            {% if value == 'yes' or value == 'no' %}
+            <div class="col-md-4">
+                <div class="form-group form-group-default">
+                    <label>{{ option }}</label>
+                    <select class="form-control" id="{{ option }}" name="{{ option }}">
+                        <option value="{{ value }}">{{ value }}</option>
+                        {% if value == 'yes' %}
+                        <option value="no">no</option>
+                        {% else %}
+                        <option value="yes">yes</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-md-4">
+                <div class="form-group form-group-default">
+                    <label>{{ option }}</label>
+                    <input class="form-control" id="{{ option }}" name="{{ option }}" placeholder="{{ option }}"
+                           type="{% if option not in 'HOST,PORT' %}text{% else %}hidden{% endif %}"
+                           value="{% if value is not None %}{{ value }}{% endif %}">
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-head-row">
+            <div class="card-title">Attack log</div>
+            <div class="card-tools">
+                <button id="attack-image" class="btn btn-info btn-border btn-round btn-sm">
+                    <span class="btn-label">
+                        <i class="fa fa-file-export mr-2"></i>
+                    </span>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mt-2">
+            <div class="col-md-12">
+                <div class="form-group" id="attack-log"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer no-bd">
+    <button class="btn btn-success" onclick="executeAttack('{{ request.path }}');" type="button">Execute</button>
+</div>
+
+<script>
+$('#attack-image').on('click', function() {
+    html2canvas(document.querySelector("#attack-log")).then(canvas => {
+        var link = document.createElement("a");
+        document.body.appendChild(link);
+        link.download = "attack.png";
+        link.href = canvas.toDataURL();
+        link.target = '_blank';
+        link.click();
+    });
+});
+
+function executeAttack(url) {
+    if (url) {
+        data = '<center><i class="fa fa-cog fa-4x fa-spin"></i></center>'
+        $('#attack-log').html(data);
+
+        $.ajax(url, {
+            type: 'POST',
+            data: {
+                attack: '{{ flaw }}',
+                {% for option, data in options %}
+                {{ option }}: document.getElementById('{{ option }}').value,
+                {% endfor %}
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                $('#attack-log').html(data);
+            }
+        });
+    } else {
+        $('#attack-log').html('');
+    }
+}
+</script>

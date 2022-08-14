@@ -17,6 +17,7 @@ from fishnet.lib.storage import Storage
 
 from hatsploit.lib.runtime import Runtime
 from hatsploit.lib.modules import Modules
+from hatsploit.lib.payloads import Payloads
 from hatsploit.lib.sessions import Sessions
 
 
@@ -27,6 +28,7 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
     runtime.start(build_base=True)
 
     modules = Modules()
+    hsf_payloads = Payloads()
 
     details = {
         'Name': 'HatSploit',
@@ -70,6 +72,50 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             else:
                 sessions_db.filter(session=session.session).delete()
 
+    def session(self, session_id):
+        return self.get_session(session_id)
+
+    def close(self, session_id):
+        self.close_session(session_id)
+
+    def payloads(self, flaw):
+        module = self.modules.search_module(flaw)
+
+        self.modules.use_module(module)
+        self.runtime.update()
+
+        if hasattr(self.modules.get_current_module(), 'payloads'):
+            module_payload = self.modules.get_current_module().payload
+
+            types = module_payload['Types']
+            platforms = module_payload['Platforms']
+            architectures = module_payload['Architectures']
+
+            payloads = []
+            hsf_payloads = self.hsf_payloads.get_payloads()
+
+            for payload in hsf_payloads['payloads']:
+                payload = hsf_payloads['payloads'][payload]
+
+                if self.hsf_payloads.check_module_compatible(
+                    payload['Payload'], types, platforms, architectures
+                ):
+                    payloads.append(payload['Name'])
+
+            return payloads
+        return []
+
+    def flaws(self):
+        flaws = []
+        modules = self.modules.get_modules()
+
+        for module in modules['modules']:
+            module = modules['modules'][module]
+
+            flaws.append(module['Name'])
+
+        return flaws
+
     def flaw(self, flaw):
         module = self.modules.search_module(flaw)
         object = self.modules.get_module_object(module)
@@ -81,13 +127,30 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             'rank': object['Rank']
         }
 
+    def set(self, flaw, option, value):
+        module = self.modules.search_module(flaw)
+
+        self.modules.use_module(module)
+        self.runtime.update()
+
+        if option.upper() in self.modules.get_current_module().options:
+            if option.lower() == 'payload':
+                value = self.hsf_payloads.search_payload(value)
+            self.modules.set_current_module_option(option, value)
+
     def options(self, flaw):
         module = self.modules.search_module(flaw)
 
         self.modules.use_module(module)
         self.runtime.update()
 
-        return self.modules.get_current_module().options
+        options = self.modules.get_current_module().options
+        payload = self.hsf_payloads.get_current_payload()
+
+        if payload:
+            options.update(payload.options)
+
+        return options
 
     def attack(self, flaw, options):
         self.disable_auto_interaction()
@@ -113,12 +176,12 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
         ).sub('', result.getvalue().replace("\n", "")).strip()
 
     def scan(self, host, project_uuid):
-        modules = self.modules.get_modules()
+        modules = self.flaws()
         flaws_db = self.flaws_db()
 
         if modules:
-            for module in modules['modules']:
-                module = modules['modules'][module]
+            for module in modules:
+                module = self.modules.search_module(module)
 
                 self.modules.use_module(module['Module'])
                 self.runtime.update()
@@ -150,30 +213,29 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                         result = self.runtime.catch(self.modules.check_current_module)
 
                         if 'PORT' in self.modules.get_current_module().options:
-                            port = int(self.modules.get_current_module().options['PORT']['Value'])
-                        else:
-                            port = 0
+                            if self.modules.get_current_module().options['PORT']['Value'] is not None:
+                                port = int(self.modules.get_current_module().options['PORT']['Value'])
 
-                        try:
-                            service = socket.getservbyport(port)
-                        except Exception:
-                            service = 'unidentified'
+                                try:
+                                    service = socket.getservbyport(port)
+                                except Exception:
+                                    service = 'unidentified'
 
-                        if result and result is not Exception:
-                            flaws_db.update_or_create(
-                                project=project_uuid,
-                                plugin=self.details['Name'],
-                                name=module['Name'],
-                                host=host.host,
-                                port=port,
+                                if result and result is not Exception:
+                                    flaws_db.update_or_create(
+                                        project=project_uuid,
+                                        plugin=self.details['Name'],
+                                        name=module['Name'],
+                                        host=host.host,
+                                        port=port,
 
-                                defaults={
-                                    'rank': module['Rank'],
-                                    'family': module['Platform'],
-                                    'service': service,
-                                    'exploitable': True
-                                }
-                            )
+                                        defaults={
+                                            'rank': module['Rank'],
+                                            'family': module['Platform'],
+                                            'service': service,
+                                            'exploitable': True
+                                        }
+                                    )
     
     def run(self, args):
         project_uuid = args['project_uuid']

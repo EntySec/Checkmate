@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Attack {% endblock title %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="content" id="content"></div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function() {
+        update("/{{ project.uuid }}/attack", "attack", "{{ project.uuid }}", {'animate': true});
+	});
+</script>
+{% endblock javascripts %}

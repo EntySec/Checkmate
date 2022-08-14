@@ -35,6 +35,16 @@
 <script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
 
 <script>
+    {% if project %}
+    $(document).ready(function() {
+        update_navigation('{{ request.path }}', '{{ project.uuid }}');
+
+        setInterval(function() {
+            update_navigation('{{ request.path }}', '{{ project.uuid }}')
+        }, 1000);
+	});
+	{% endif %}
+
     function update(url, update, project_uuid, params = {}) {
         if (!$._data(window, "events").resize[1] && $('.update-protected:hover').length == 0) {
             var data_params = {
@@ -59,6 +69,53 @@
         }
     }
 
+    function update_navigation(url, project_uuid) {
+        var data_params = {
+            project_uuid: project_uuid,
+            update: 'navigation',
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+        };
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: data_params,
+            success: function(data) {
+                $('#navigation-content').html(data);
+                $(".modal-dialog").draggable({
+                    handle: ".modal-header"
+                });
+            }
+        });
+    }
+
+    function fillFlawOptions(url, flaw) {
+        $.ajax(url, {
+            type: 'POST',
+            data: {
+                update: 'attack',
+                project_uuid: '{{ project.uuid }}',
+                flaw_options: flaw,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                $('#content').html(data)
+            }
+        });
+    }
+
+    function setFlawOption(url, flaw, option, value) {
+        $.ajax(url, {
+            type: 'POST',
+            data: {
+                set_option: flaw,
+                option: option,
+                value: value,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            }
+        });
+    }
+
     function fillAttackDetails(url, flaw, host, port) {
         if (url && flaw) {
             $.ajax(url, {
@@ -74,8 +131,7 @@
                 }
             });
         } else {
-            data = '<div id="attack-details-content" class="modal-body"></div>';
-            $('#attack-details-content').html(data);
+            $('#attack-details-content').html('');
         }
     }
 
@@ -92,8 +148,7 @@
                 }
             });
         } else {
-            data = '<div id="host-details-content" class="modal-body"></div>';
-            $('#host-details-content').html(data);
+            $('#host-details-content').html('');
         }
     }
 
@@ -110,8 +165,7 @@
                 }
             });
         } else {
-            data = '<div id="flaw-details-content" class="modal-body"></div>';
-            $('#flaw-details-content').html(data);
+            $('#flaw-details-content').html('');
         }
     }
 

@@ -156,6 +156,53 @@ class Network:
                             if iface in [network.iface for network in NetworkDB.objects.filter(project=project_uuid)]:
                                 break
 
+    def set_option(self, project_uuid: str, flaw: str, option: str, value: str) -> None:
+        """ Set flaw option value.
+
+        :param str project_uuid: project UUID
+        :param str flaw: flaw name
+        :param str option: option to set
+        :param str value: value
+        :return None: None
+        """
+
+        flaws = FlawDB.objects.filter(project=project_uuid)
+
+        if flaws.filter(name=flaw).exists():
+            flaw_object = flaws.get(name=flaw)
+
+            if flaw_object.exploitable:
+                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'set'):
+                    self.scanners[flaw_object.plugin]['plugin'].set(flaw, option, value)
+        else:
+            for scanner in self.scanners:
+                if hasattr(self.scanners[scanner]['plugin'], 'set'):
+                    self.scanners[scanner]['plugin'].set(flaw, option, value)
+                    break
+
+    def get_payloads(self, project_uuid: str, flaw: str) -> list:
+        """ Get all flaw payloads.
+
+        :param str project_uuid: project UUID
+        :param str flaw: flaw to get payloads for
+        :return list: all payloads
+        """
+
+        flaws = FlawDB.objects.filter(project=project_uuid)
+
+        if flaws.filter(name=flaw).exists():
+            flaw_object = flaws.get(name=flaw)
+
+            if flaw_object.exploitable:
+                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'payloads'):
+                    return self.scanners[flaw_object.plugin]['plugin'].payloads(flaw)
+        else:
+            for scanner in self.scanners:
+                if hasattr(self.scanners[scanner]['plugin'], 'payloads'):
+                    return self.scanners[scanner]['plugin'].payloads(flaw)
+
+        return []
+
     def run_attack(self, project_uuid: str, flaw: str, options: dict) -> str:
         """ Run attack using scanner which has the feature to attack.
 
@@ -166,11 +213,18 @@ class Network:
         """
 
         flaws = FlawDB.objects.filter(project=project_uuid)
-        flaw_object = flaws.get(name=flaw)
 
-        if flaw_object.exploitable:
-            if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
-                return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
+        if flaws.filter(name=flaw).exists():
+            flaw_object = flaws.get(name=flaw)
+
+            if flaw_object.exploitable:
+                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
+                    return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
+        else:
+            for scanner in self.scanners:
+                if hasattr(self.scanners[scanner]['plugin'], 'attack'):
+                    return self.scanners[scanner]['plugin'].attack(flaw, options)
+
         return '[!] Unfortunately this flaw is not exploitable.'
 
     def session_execute(self, project_uuid: str, session: int, command: str) -> str:
@@ -187,7 +241,7 @@ class Network:
 
         if hasattr(self.scanners[session_object.plugin]['plugin'], 'get_session'):
             try:
-                return self.scanners[session_object.plugin]['plugin'].get_session(
+                return self.scanners[session_object.plugin]['plugin'].session(
                     session
                 ).send_command(command, True)
             except Exception:
@@ -202,20 +256,27 @@ class Network:
         :return dict: flaw options
         """
 
-        flaws = FlawDB.objects.filter(project=project_uuid)
-        flaw_object = flaws.get(name=flaw)
-
         result = {}
 
-        if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'options'):
-            options = self.scanners[flaw_object.plugin]['plugin'].options(flaw)
+        flaws = FlawDB.objects.filter(project=project_uuid)
 
-            for option in options:
-                result.update({option: options[option]['Value']})
+        if flaws.filter(name=flaw).exists():
+            flaw_object = flaws.get(name=flaw)
 
-        return {
-            'options': result
-        }
+            if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'options'):
+                options = self.scanners[flaw_object.plugin]['plugin'].options(flaw)
+
+                for option in options:
+                    result.update({option: options[option]['Value']})
+        else:
+            for scanner in self.scanners:
+                if hasattr(self.scanners[scanner]['plugin'], 'options'):
+                    options = self.scanners[scanner]['plugin'].options(flaw)
+
+                    for option in options:
+                        result.update({option: options[option]['Value']})
+
+        return result
 
     def close_session(self, project_uuid: str, session: int) -> None:
         """ Close session.
@@ -230,7 +291,7 @@ class Network:
 
         if hasattr(self.scanners[session_object.plugin]['plugin'], 'close_session'):
             try:
-                self.scanners[session_object.plugin]['plugin'].close_session(session)
+                self.scanners[session_object.plugin]['plugin'].close(session)
             except Exception:
                 pass
 
@@ -315,6 +376,18 @@ class Network:
             'sessions': sessions,
             'sessions_types': [list(sessions_types.keys()), list(sessions_types.values())]
         }
+
+    def get_flaws(self) -> list:
+        """ Get flaws available for project.
+
+        :return list: list of flaws available for project
+        """
+
+        for scanner in self.scanners:
+            if hasattr(self.scanners[scanner]['plugin'], 'flaws'):
+                return self.scanners[scanner]['plugin'].flaws()
+
+        return []
 
     def get_sessions(self, project_uuid: str) -> QuerySet:
         """ Get sessions available for project.
