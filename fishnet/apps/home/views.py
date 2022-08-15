@@ -430,7 +430,7 @@ def pages(request):
 
         context.update({
             'project': project,
-            'scanners': network.scanners.items()
+            'scanners': network.scanners.items(),
             'segment': endpoint,
             'projects': projects.get_projects(),
             'teams': teams.get_teams()
