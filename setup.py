@@ -25,7 +25,7 @@ SOFTWARE.
 from setuptools import setup, find_packages
 
 setup(name='fishnet',
-      version='5.0.0',
+      version='1.0.0',
       description='Powerful advanced web platform for collaboration and automated penetration testing.',
       url='https://github.com/EntySec/Fishnet',
       author='EntySec',
