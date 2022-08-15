@@ -183,13 +183,15 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             for module in modules:
                 module = self.modules.search_module(module)
 
-                self.modules.use_module(module['Module'])
+                self.modules.use_module(module)
                 self.runtime.update()
 
-                if 'HOST' in self.modules.get_current_module().options:
+                module = self.modules.get_current_module()
+
+                if 'HOST' in module.options:
                     self.modules.set_current_module_option('HOST', host.host)
 
-                    if 'PORT' in self.modules.get_current_module().options and host.ports:
+                    if 'PORT' in module.options and host.ports:
                         for port in host.ports:
                             self.modules.set_current_module_option('PORT', str(port))
                             result = self.runtime.catch(self.modules.check_current_module)
@@ -198,13 +200,13 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                 flaws_db.update_or_create(
                                     project=project_uuid,
                                     plugin=self.details['Name'],
-                                    name=module['Name'],
+                                    name=module.details['Name'],
                                     host=host.host,
                                     port=port,
 
                                     defaults={
-                                        'rank': module['Rank'],
-                                        'family': module['Platform'],
+                                        'rank': module.details['Rank'],
+                                        'family': module.details['Platform'],
                                         'service': host.ports[port],
                                         'exploitable': True
                                     }
@@ -212,9 +214,9 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                     else:
                         result = self.runtime.catch(self.modules.check_current_module)
 
-                        if 'PORT' in self.modules.get_current_module().options:
-                            if self.modules.get_current_module().options['PORT']['Value'] is not None:
-                                port = int(self.modules.get_current_module().options['PORT']['Value'])
+                        if 'PORT' in module.options:
+                            if module.options['PORT']['Value'] is not None:
+                                port = int(module.options['PORT']['Value'])
 
                                 try:
                                     service = socket.getservbyport(port)
@@ -225,13 +227,13 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                                     flaws_db.update_or_create(
                                         project=project_uuid,
                                         plugin=self.details['Name'],
-                                        name=module['Name'],
+                                        name=module.details['Name'],
                                         host=host.host,
                                         port=port,
 
                                         defaults={
-                                            'rank': module['Rank'],
-                                            'family': module['Platform'],
+                                            'rank': module.details['Rank'],
+                                            'family': module.details['Platform'],
                                             'service': service,
                                             'exploitable': True
                                         }
