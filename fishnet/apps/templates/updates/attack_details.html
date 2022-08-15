@@ -22,14 +22,18 @@
                 </div>
             </div>
             {% else %}
+            {% if option not in 'HOST,PORT' %}
             <div class="col-md-4">
                 <div class="form-group form-group-default">
                     <label>{{ option }}</label>
                     <input class="form-control" id="{{ option }}" name="{{ option }}" placeholder="{{ option }}"
-                           type="{% if option not in 'HOST,PORT' %}text{% else %}hidden{% endif %}"
+                           type="text"
                            value="{% if value is not None %}{{ value }}{% endif %}">
                 </div>
             </div>
+            {% else %}
+            <input type="hidden" id="{{ option }}" name="{{ option }}" value="{{ value }}">
+            {% endif %}
             {% endif %}
             {% endfor %}
         </div>
