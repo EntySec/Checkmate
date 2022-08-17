@@ -106,39 +106,50 @@ def allow_edit_profile(request):
             if user.objects.get(username=request.user.username).check_password(password):
                 if 'email' in request.POST:
                     email = request.POST['email']
-                    user.objects.filter(username=request.user.username).update(email=email)
+
+                    if email:
+                        user.objects.filter(username=request.user.username).update(email=email)
 
                 if 'first_name' in request.POST:
                     first_name = request.POST['first_name']
-                    user.objects.filter(username=request.user.username).update(first_name=first_name)
+
+                    if first_name:
+                        user.objects.filter(username=request.user.username).update(first_name=first_name)
 
                 if 'last_name' in request.POST:
                     last_name = request.POST['last_name']
-                    user.objects.filter(username=request.user.username).update(last_name=last_name)
+
+                    if last_name:
+                        user.objects.filter(username=request.user.username).update(last_name=last_name)
 
                 if 'new_password' in request.POST:
                     new_password = request.POST['new_password']
-                    username = request.user.username
 
-                    u = user.objects.get(username=request.user.username)
-                    u.set_password(new_password)
-                    u.save()
+                    if new_password:
+                        username = request.user.username
 
-                    user = authenticate(username=username, password=password)
-                    login(request, user)
+                        u = user.objects.get(username=request.user.username)
+                        u.set_password(new_password)
+                        u.save()
+
+                        user = authenticate(username=username, password=password)
+                        login(request, user)
 
                 if 'username' in request.POST:
                     username = request.POST['username']
 
-                    if not user.objects.filter(username=username).exists():
-                        user.objects.filter(username=request.user.username).update(username=username)
+                    if username:
+                        user = get_user_model()
 
-                        settings.change_setting_user(request.user.username, username)
-                        teams.change_team_leader(request.user.username, username)
-                        teams.change_team_user(request.user.username, username)
-                        projects.change_projects_author(request.user.username, username)
+                        if not user.objects.filter(username=username).exists():
+                            user.objects.filter(username=request.user.username).update(username=username)
 
-                        request.user.username = username
+                            settings.change_setting_user(request.user.username, username)
+                            teams.change_team_leader(request.user.username, username)
+                            teams.change_team_user(request.user.username, username)
+                            projects.change_projects_author(request.user.username, username)
+
+                            request.user.username = username
 
 
 def allow_toggle_dark(request):
