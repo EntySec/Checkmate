@@ -246,12 +246,11 @@ class Network:
 
         return payloads
 
-    def run_attack(self, project_uuid: str, flaw: str, options: dict) -> str:
+    def run_attack(self, project_uuid: str, flaw: str) -> str:
         """ Run attack using scanner which has the feature to attack.
 
         :param str project_uuid: project UUID
         :param str flaw: flaw name
-        :param dict options: options to set in scanner
         :return str: attack log
         """
 
@@ -264,12 +263,12 @@ class Network:
             if flaw_object.exploitable:
                 if flaw_object.plugin in plugins:
                     if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
-                        return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
+                        return self.scanners[flaw_object.plugin]['plugin'].attack(flaw)
         else:
             for scanner in self.scanners:
                 if scanner in plugins:
                     if hasattr(self.scanners[scanner]['plugin'], 'attack'):
-                        return self.scanners[scanner]['plugin'].attack(flaw, options)
+                        return self.scanners[scanner]['plugin'].attack(flaw)
 
         return '[!] Unfortunately this flaw is not exploitable.'
 
