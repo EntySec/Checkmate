@@ -162,17 +162,13 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
 
         return result
 
-    def attack(self, flaw, options):
+    def attack(self, flaw):
         self.disable_auto_interaction()
 
         module = self.modules.search_module(flaw)
 
         self.modules.use_module(module)
         self.runtime.update()
-
-        for option in options:
-            if option in self.modules.get_current_module().options:
-                self.modules.set_current_module_option(option, options[option])
 
         temp = sys.stdout
         result = StringIO()
