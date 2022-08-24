@@ -9,7 +9,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post">
+            <form id="scannersForm" method="post">
                 {% csrf_token %}
                 <div class="modal-body">
                     <p class="small">Set gateway(s) (optional)</p>
@@ -47,9 +47,16 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <input class="form-check-input" type="checkbox" name="cycle" value="yes">
+                            <span class="form-check-sign">Сyclic scanning through selected scanners</span>
+                        </label>
+                    </div>
                 </div>
+                <input type="hidden" name="project_run" value="">
                 <div class="modal-footer no-bd">
-                    <button class="btn btn-primary" id="createButton" name="project_run" type="submit">Execute</button>
+                    <button class="btn btn-primary" id="startButton" data-dismiss="modal" onclick="sendForm('#scannersForm'); startIntervals();">Execute</button>
                     <button class="btn btn-danger" data-dismiss="modal" type="button">Close</button>
                 </div>
             </form>

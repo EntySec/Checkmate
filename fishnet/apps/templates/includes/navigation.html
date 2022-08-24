@@ -17,17 +17,9 @@
 
         {% if request.user.is_authenticated %}
         <div class="container-fluid">
-            <ul class="navbar-nav topbar-nav ml-md-auto" id="navigation-content">
-            </ul>
+            <div class="topbar-nav ml-md-auto" id="navigation-content">
+            </div>
             <ul class="navbar-nav topbar-nav ml-md-auto align-items-center">
-                {% if project and project.running %}
-                <li class="nav-item dropdown hidden-caret">
-                    <span class="badge badge-success">
-                        <i class="fa fa-cog fa-spin"></i>
-                        Busy
-                    </span>
-                </li>
-                {% endif %}
                 {% if not project %}
                 <li class="nav-item dropdown hidden-caret">
                     <a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle" data-toggle="dropdown"
@@ -49,9 +41,7 @@
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Fishnet</span>
-                                            <span class="block">
-						Welcome to Fishnet, yet another auditor!
-					    </span>
+                                            <span class="block">Hotline Miami is the best game in the world!</span>
                                             <span class="time">success</span>
                                         </div>
                                     </a>
@@ -139,13 +129,13 @@
                                     </a>
                                     <a class="justify-content-center">
                                         <div class="notif-content">
-                                            <form method="post">
+                                            <form id="projectForm" method="post">
                                                 {% csrf_token %}
-                                                <button name="project_stop" type="submit" class="btn">
+                                                <button name="project_stop" type="submit" class="btn" onclick="clearIntervals();">
                                                     <i class="fas fa-ban"></i>
                                                 </button>
                                                 {% if request.user.username == project.author %}
-                                                <button name="project_archive" type="submit" class="btn">
+                                                <button name="project_archive" type="submit" class="btn" onclick="clearIntervals(); location.href = '/projects';">
                                                     <i class="fas fa-archive"></i>
                                                 </button>
                                                 {% endif %}
@@ -201,3 +191,7 @@
         {% endif %}
     </nav>
 </div>
+
+<script>
+    $('#projectForm').ajaxForm(function(response) {});
+</script>

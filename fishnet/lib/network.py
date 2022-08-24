@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import os
+import uuid
 import ctypes
 import random
 import threading
@@ -56,13 +57,15 @@ class Network:
         sorted(plugins.load_plugins('network').items())
     )
 
+    download_queue = {}
+    download_threads = {}
+
+    upload_queue = {}
+    upload_threads = {}
+
     scanner = threading.Thread()
 
-    download_queue = {}
-    upload_queue = {}
-
     jobs = {}
-    queue_jobs = {}
     job = {}
 
     colors = [
@@ -98,12 +101,13 @@ class Network:
                 self.jobs[project_uuid].pop(scanner)
             self.jobs.pop(project_uuid)
 
-    def start_scan(self, project_uuid: str, scanners: list, gateway: str = '') -> None:
+    def start_scan(self, project_uuid: str, scanners: list, gateway: str = '', cycle: bool = True) -> None:
         """ Start network scanner.
 
         :param str project_uuid: project UUID
         :param list scanners: list of scanners to execute
         :param str gateway: custom gateway (or bunch of them)
+        :param bool cycle: cyclic scanning through selected scanners
         :return None: None
         """
 
@@ -141,13 +145,15 @@ class Network:
 
                     if iface not in self.jobs[project_uuid][scanner]:
                         self.jobs[project_uuid][scanner][iface] = threading.Thread(
-                            target=self.scanners[scanner]['plugin'].run,
-                            args=[{
-                                'gateway': gateways[iface],
-                                'iface': iface,
-                                'method': 'arp' if iface in local_gateways else 'icmp',
-                                'project_uuid': project_uuid
-                            }]
+                            target=self.scan_thread,
+                            args=[
+                                project_uuid,
+                                scanner,
+                                gateways[iface],
+                                iface,
+                                'arp' if iface in local_gateways else 'icmp',
+                                cycle
+                            ]
                         )
                         self.jobs[project_uuid][scanner][iface].setDaemon(True)
                         self.jobs[project_uuid][scanner][iface].start()
@@ -155,6 +161,35 @@ class Network:
                         while True:
                             if iface in [network.iface for network in NetworkDB.objects.filter(project=project_uuid)]:
                                 break
+
+    def scan_thread(self, project_uuid: str, scanner: str, gateway: str,
+                    iface: str, method: str, cycle: bool) -> None:
+        """ Scanner thread target function.
+
+        :param str project_uuid: project UUID
+        :param str scanner: scanner to use
+        :param str gateway: gateway to scan
+        :param str iface: interface to scan
+        :param str method: scan method (arp/icmp)
+        :param bool cycle: cyclic scanning through selected scanners
+        :return None: None
+        """
+
+        if cycle:
+            while True:
+                self.scanners[scanner]['plugin'].run({
+                    'gateway': gateway,
+                    'iface': iface,
+                    'method': method,
+                    'project_uuid': project_uuid
+                })
+        else:
+            self.scanners[scanner]['plugin'].run({
+                'gateway': gateway,
+                'iface': iface,
+                'method': method,
+                'project_uuid': project_uuid
+            })
 
     def set_option(self, project_uuid: str, flaw: str, option: str, value: str) -> None:
         """ Set flaw option value.
@@ -167,18 +202,21 @@ class Network:
         """
 
         flaws = FlawDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
 
         if flaws.filter(name=flaw).exists():
             flaw_object = flaws.get(name=flaw)
 
             if flaw_object.exploitable:
-                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'set'):
-                    self.scanners[flaw_object.plugin]['plugin'].set(flaw, option, value)
+                if flaw_object.plugin in plugins:
+                    if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'set'):
+                        self.scanners[flaw_object.plugin]['plugin'].set(flaw, option, value)
         else:
             for scanner in self.scanners:
-                if hasattr(self.scanners[scanner]['plugin'], 'set'):
-                    self.scanners[scanner]['plugin'].set(flaw, option, value)
-                    break
+                if scanner in plugins:
+                    if hasattr(self.scanners[scanner]['plugin'], 'set'):
+                        self.scanners[scanner]['plugin'].set(flaw, option, value)
+                        break
 
     def get_payloads(self, project_uuid: str, flaw: str) -> list:
         """ Get all flaw payloads.
@@ -189,19 +227,24 @@ class Network:
         """
 
         flaws = FlawDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
+
+        payloads = []
 
         if flaws.filter(name=flaw).exists():
             flaw_object = flaws.get(name=flaw)
 
             if flaw_object.exploitable:
-                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'payloads'):
-                    return self.scanners[flaw_object.plugin]['plugin'].payloads(flaw)
+                if flaw_object.plugin in plugins:
+                    if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'payloads'):
+                        payloads += self.scanners[flaw_object.plugin]['plugin'].payloads(flaw)
         else:
             for scanner in self.scanners:
-                if hasattr(self.scanners[scanner]['plugin'], 'payloads'):
-                    return self.scanners[scanner]['plugin'].payloads(flaw)
+                if scanner in plugins:
+                    if hasattr(self.scanners[scanner]['plugin'], 'payloads'):
+                        payloads += self.scanners[scanner]['plugin'].payloads(flaw)
 
-        return []
+        return payloads
 
     def run_attack(self, project_uuid: str, flaw: str, options: dict) -> str:
         """ Run attack using scanner which has the feature to attack.
@@ -213,19 +256,190 @@ class Network:
         """
 
         flaws = FlawDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
 
         if flaws.filter(name=flaw).exists():
             flaw_object = flaws.get(name=flaw)
 
             if flaw_object.exploitable:
-                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
-                    return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
+                if flaw_object.plugin in plugins:
+                    if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
+                        return self.scanners[flaw_object.plugin]['plugin'].attack(flaw, options)
         else:
             for scanner in self.scanners:
-                if hasattr(self.scanners[scanner]['plugin'], 'attack'):
-                    return self.scanners[scanner]['plugin'].attack(flaw, options)
+                if scanner in plugins:
+                    if hasattr(self.scanners[scanner]['plugin'], 'attack'):
+                        return self.scanners[scanner]['plugin'].attack(flaw, options)
 
         return '[!] Unfortunately this flaw is not exploitable.'
+
+    def session_upload(self, project_uuid: str, session: int, local_file: str, remote_path: str) -> None:
+        """ Upload file to session.
+
+        :param str project_uuid: project UUID
+        :param int session: session to upload file to
+        :param str local_file: file to upload to session
+        :param str remote_path: path to save uploaded file
+        :return None: None
+        """
+
+        if project_uuid not in self.upload_queue:
+            self.upload_queue[project_uuid] = {}
+
+        if session not in self.upload_queue[project_uuid]:
+            self.upload_queue[project_uuid][session] = {}
+
+        self.upload_queue[project_uuid][session].update({
+            str(uuid.uuid4()): [local_file, remote_path]
+        })
+
+        self.run_upload_queue(project_uuid)
+
+    def session_download(self, project_uuid: str, session: int, remote_file: str, local_path: str) -> None:
+        """ Download file from session.
+
+        :param str project_uuid: project UUID
+        :param int session: session to download file from
+        :param str remote_file: file to download from session
+        :param str local_path: path to save downloaded file
+        :return None: None
+        """
+
+        if project_uuid not in self.download_queue:
+            self.download_queue[project_uuid] = {}
+
+        if session not in self.download_queue[project_uuid]:
+            self.download_queue[project_uuid][session] = {}
+
+        self.download_queue[project_uuid][session].update({
+            str(uuid.uuid4()): [remote_file, local_path]
+        })
+
+        self.run_download_queue(project_uuid)
+
+    def run_upload_queue(self, project_uuid: str) -> None:
+        """ Run upload queue.
+
+        :param str project_uuid: project UUID
+        :return None: None
+        """
+
+        if project_uuid in self.upload_queue:
+            if project_uuid not in self.upload_threads:
+                self.upload_threads[project_uuid] = {}
+
+            for session in self.upload_queue[project_uuid]:
+                if session not in self.upload_threads[project_uuid]:
+                    self.upload_threads[project_uuid][session] = threading.Thread()
+
+                if not self.upload_threads[project_uuid][session].is_alive():
+                    self.upload_threads[project_uuid][session] = threading.Thread(
+                        target=self.run_session_upload_queue,
+                        args=[project_uuid, session]
+                    )
+                    self.upload_threads[project_uuid][session].setDaemon(True)
+                    self.upload_threads[project_uuid][session].start()
+
+    def run_download_queue(self, project_uuid: str) -> None:
+        """ Run download queue.
+
+        :param str project_uuid: project UUID
+        :return None: None
+        """
+
+        if project_uuid in self.download_queue:
+            if project_uuid not in self.download_threads:
+                self.download_threads[project_uuid] = {}
+
+            for session in self.download_queue[project_uuid]:
+                if session not in self.download_threads[project_uuid]:
+                    self.download_threads[project_uuid][session] = threading.Thread()
+
+                if not self.download_threads[project_uuid][session].is_alive():
+                    self.download_threads[project_uuid][session] = threading.Thread(
+                        target=self.run_session_download_queue,
+                        args=[project_uuid, session]
+                    )
+                    self.download_threads[project_uuid][session].setDaemon(True)
+                    self.download_threads[project_uuid][session].start()
+
+    def run_session_upload_queue(self, project_uuid: str, session: int) -> None:
+        """ Run session upload queue.
+
+        :param str project_uuid: project UUID
+        :param int session: session to run upload queue for
+        :return None: None
+        """
+
+        while True:
+            sessions = SessionDB.objects.filter(project=project_uuid)
+            plugins = self.projects.get_project(project_uuid).plugins
+
+            session_object = sessions.get(session=session)
+            jobs = self.upload_queue[project_uuid][session]
+
+            if session_object.plugin in plugins:
+                if hasattr(self.scanners[session_object.plugin]['plugin'], 'upload'):
+                    for job in list(jobs):
+                        try:
+                            self.scanners[session_object.plugin]['plugin'].upload(
+                                jobs[job][0], jobs[job][1]
+                            )
+                        except Exception:
+                            pass
+
+                        jobs.pop(job)
+
+            if not jobs:
+                break
+
+    def run_session_download_queue(self, project_uuid: str, session: int) -> None:
+        """ Run session download queue.
+
+        :param str project_uuid: project UUID
+        :param int session: session to run download queue for
+        :return None: None
+        """
+
+        while True:
+            sessions = SessionDB.objects.filter(project=project_uuid)
+            plugins = self.projects.get_project(project_uuid).plugins
+
+            session_object = sessions.get(session=session)
+            jobs = self.download_queue[project_uuid][session]
+
+            if session_object.plugin in plugins:
+                if hasattr(self.scanners[session_object.plugin]['plugin'], 'download'):
+                    for job in list(jobs):
+                        try:
+                            self.scanners[session_object.plugin]['plugin'].download(
+                                jobs[job][0], jobs[job][1]
+                            )
+                        except Exception:
+                            pass
+
+                        jobs.pop(job)
+
+            if not jobs:
+                break
+
+    def check_session_busy(self, project_uuid: str, session: int) -> bool:
+        """ Check if session is busy.
+
+        :param str project_uuid: project UUID
+        :param int session: session to check
+        :return bool: True if busy else False
+        """
+
+        if project_uuid in self.download_queue:
+            if session in self.download_queue[project_uuid]:
+                return True
+
+        if project_uuid in self.upload_queue:
+            if session in self.upload_queue[project_uuid]:
+                return True
+
+        return False
 
     def session_execute(self, project_uuid: str, session: int, command: str) -> str:
         """ Execute command on session.
@@ -237,15 +451,18 @@ class Network:
         """
 
         sessions = SessionDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
+
         session_object = sessions.get(session=session)
 
-        if hasattr(self.scanners[session_object.plugin]['plugin'], 'get_session'):
-            try:
-                return self.scanners[session_object.plugin]['plugin'].session(
-                    session
-                ).send_command(command, True)
-            except Exception:
-                pass
+        if session_object.plugin in plugins:
+            if hasattr(self.scanners[session_object.plugin]['plugin'], 'execute'):
+                try:
+                    return self.scanners[session_object.plugin]['plugin'].execute(
+                        session, command
+                    )
+                except Exception:
+                    pass
         return ''
 
     def get_flaw_options(self, project_uuid: str, flaw: str) -> dict:
@@ -256,27 +473,22 @@ class Network:
         :return dict: flaw options
         """
 
-        result = {}
-
         flaws = FlawDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
 
         if flaws.filter(name=flaw).exists():
             flaw_object = flaws.get(name=flaw)
 
-            if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'options'):
-                options = self.scanners[flaw_object.plugin]['plugin'].options(flaw)
-
-                for option in options:
-                    result.update({option: options[option]['Value']})
+            if flaw_object.plugin in plugins:
+                if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'options'):
+                    return self.scanners[flaw_object.plugin]['plugin'].options(flaw)
         else:
             for scanner in self.scanners:
-                if hasattr(self.scanners[scanner]['plugin'], 'options'):
-                    options = self.scanners[scanner]['plugin'].options(flaw)
+                if scanner in plugins:
+                    if hasattr(self.scanners[scanner]['plugin'], 'options'):
+                        return self.scanners[scanner]['plugin'].options(flaw)
 
-                    for option in options:
-                        result.update({option: options[option]['Value']})
-
-        return result
+        return {}
 
     def close_session(self, project_uuid: str, session: int) -> None:
         """ Close session.
@@ -287,27 +499,32 @@ class Network:
         """
 
         sessions = SessionDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
+
         session_object = sessions.get(session=session)
 
-        if hasattr(self.scanners[session_object.plugin]['plugin'], 'close_session'):
-            try:
-                self.scanners[session_object.plugin]['plugin'].close(session)
-            except Exception:
-                pass
+        if session_object.plugin in plugins:
+            if hasattr(self.scanners[session_object.plugin]['plugin'], 'close_session'):
+                try:
+                    self.scanners[session_object.plugin]['plugin'].close(session)
+                except Exception:
+                    pass
 
-    def run_scan(self, project_uuid: str, scanners: list, gateway: str = '') -> None:
+    def run_scan(self, project_uuid: str, scanners: list, gateway: str = '', cycle: bool = True) -> None:
         """ Run network scanner (thread mode).
 
         :param str project_uuid: project UUID
         :param str scanners: list of scanners to execute
         :param str gateway: custom gateway
+        :param bool cycle: cyclic scanning through selected scanners
         :return None: None
         """
 
         self.job[project_uuid] = threading.Thread(target=self.start_scan, args=[
             project_uuid,
             scanners,
-            gateway
+            gateway,
+            cycle
         ])
         self.job[project_uuid].setDaemon(True)
         self.job[project_uuid].start()
@@ -321,10 +538,13 @@ class Network:
         """
 
         flaws = FlawDB.objects.filter(project=project_uuid)
+        plugins = self.projects.get_project(project_uuid).plugins
+
         flaw_object = flaws.get(name=flaw)
 
-        if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
-            return self.scanners[flaw_object.plugin]['plugin'].flaw(flaw)
+        if flaw_object.plugin in plugins:
+            if hasattr(self.scanners[flaw_object.plugin]['plugin'], 'attack'):
+                return self.scanners[flaw_object.plugin]['plugin'].flaw(flaw)
 
         return {
             'name': flaw,
@@ -377,17 +597,22 @@ class Network:
             'sessions_types': [list(sessions_types.keys()), list(sessions_types.values())]
         }
 
-    def get_flaws(self) -> list:
+    def get_flaws(self, project_uuid: str) -> list:
         """ Get flaws available for project.
 
+        :param str project_uuid: project UUID
         :return list: list of flaws available for project
         """
 
-        for scanner in self.scanners:
-            if hasattr(self.scanners[scanner]['plugin'], 'flaws'):
-                return self.scanners[scanner]['plugin'].flaws()
+        flaws = []
+        plugins = self.projects.get_project(project_uuid).plugins
 
-        return []
+        for scanner in self.scanners:
+            if scanner in plugins:
+                if hasattr(self.scanners[scanner]['plugin'], 'flaws'):
+                    flaws += self.scanners[scanner]['plugin'].flaws()
+
+        return flaws
 
     def get_sessions(self, project_uuid: str) -> QuerySet:
         """ Get sessions available for project.
@@ -400,132 +625,30 @@ class Network:
         :return QuerySet: sessions available for project
         """
 
+        plugins = self.projects.get_project(project_uuid).plugins
+
         for scanner in self.scanners:
-            if hasattr(self.scanners[scanner]['plugin'], 'sessions'):
-                self.scanners[scanner]['plugin'].sessions(project_uuid)
+            if scanner in plugins:
+                if hasattr(self.scanners[scanner]['plugin'], 'sessions'):
+                    self.scanners[scanner]['plugin'].sessions(project_uuid)
 
         return SessionDB.objects.filter(project=project_uuid)
 
-    def queue_file_download(self, project_uuid: str, remote_file: str, local_path: str, session: int) -> None:
-        """ Queue file download from session.
+    def get_scanners(self, project_uuid: str) -> dict:
+        """ Get all scanners available for project.
 
         :param str project_uuid: project UUID
-        :param str remote_file: remote file to download
-        :param str local_path: local path to save downloaded file to
-        :param int session: session to download file from
-        :return None: None
+        :return dict: all scanners available for project
         """
 
-        if project_uuid not in self.download_queue:
-            self.download_queue[project_uuid] = {}
+        scanners = {}
+        plugins = self.projects.get_project(project_uuid).plugins
 
-        if session not in self.download_queue[project_uuid]:
-            self.download_queue[project_uuid][session] = {}
+        for scanner in self.scanners:
+            if scanner in plugins:
+                scanners[scanner] = self.scanners[scanner]
 
-        if remote_file not in self.download_queue[project_uuid][session]:
-            self.download_queue[project_uuid][session][remote_file] = {
-                'local_path': local_path,
-                'done': False
-            }
-
-    def queue_file_upload(self, project_uuid: str, local_file: str, remote_path: str, session: int) -> None:
-        """ Queue file upload to session.
-
-        :param str project_uuid: project UUID
-        :param str local_file: remote file to upload
-        :param str remote_path: remote path to save uploaded file to
-        :param int session: session to upload file to
-        :return None: None
-        """
-
-        if project_uuid not in self.upload_queue:
-            self.upload_queue[project_uuid] = {}
-
-        if session not in self.upload_queue[project_uuid]:
-            self.upload_queue[project_uuid][session] = {}
-
-        if local_file not in self.upload_queue[project_uuid][session]:
-            self.upload_queue[project_uuid][session][local_file] = {
-                'remote_path': remote_path,
-                'done': False
-            }
-
-    def start_queue(self, project_uuid: str) -> None:
-        """ Run all queue download and upload jobs.
-
-        :param str project_uuid: project UUID
-        :return None: None
-        """
-
-        for session in self.download_queue[project_uuid]:
-            pass
-
-    def session_queue(self, project_uuid: str, session: int) -> None:
-        """ Special pool for completing session transactions.
-
-        :param str project_uuid: project UUID
-        :param int session: session to create pool for
-        :return None: None
-        """
-
-        for remote_file in self.download_queue[project_uuid][session]:
-            queue = self.download_queue[project_uuid][session][remote_file]
-            local_path = queue['local_path']
-
-            self.download_file(project_uuid, remote_file, local_path, session)
-
-        for local_file in self.upload_queue[project_uuid][session]:
-            queue = self.upload_queue[project_uuid][session][local_file]
-
-    def run_queue(self, project_uuid: str) -> None:
-        """ Run queue thread of download and upload jobs.
-
-        :param str project_uuid: project UUID
-        :return None: None
-        """
-
-        if project_uuid not in self.queue_jobs:
-            self.queue_jobs[project_uuid] = threading.Thread(target=self.start_queue, args=[project_uuid])
-            self.queue_jobs[project_uuid].setDaemon(True)
-            self.queue_jobs[project_uuid].start()
-
-    def download_file(self, project_uuid: str, remote_file: str, local_path: str, session: int) -> None:
-        """ Download file from session.
-
-        :param str project_uuid: project UUID
-        :param str remote_file: remote file to download
-        :param str local_path: local path to save downloaded file to
-        :param int session: session to download file from
-        :return None: None
-        """
-
-        sessions = SessionDB.objects.filter(project=project_uuid)
-        session_object = sessions.get(session=session)
-
-        if hasattr(self.scanners[session_object.plugin]['plugin'], 'session_download'):
-            try:
-                self.scanners[session_object.plugin]['plugin'].session_download(session, remote_file, local_path)
-            except Exception:
-                pass
-
-    def upload_file(self, project_uuid: str, local_file: str, remote_path: str, session: int) -> None:
-        """ Upload file to session.
-
-        :param str project_uuid: project UUID
-        :param str local_file: remote file to upload
-        :param str remote_path: remote path to save uploaded file to
-        :param int session: session to upload file to
-        :return None: None
-        """
-
-        sessions = SessionDB.objects.filter(project=project_uuid)
-        session_object = sessions.get(session=session)
-
-        if hasattr(self.scanners[session_object.plugin]['plugin'], 'session_upload'):
-            try:
-                self.scanners[session_object.plugin]['plugin'].session_upload(session, local_file, remote_path)
-            except Exception:
-                pass
+        return scanners
 
     def get_scan(self, project_uuid: str) -> dict:
         """ Get all data available for project.
@@ -577,13 +700,16 @@ class Network:
 
         data = {
             'animate': True,
-            'scanners': self.scanners.items(),
+            'scanners': self.get_scanners(project_uuid).items(),
             'colors': self.colors,
 
             'networks': networks,
             'hosts': hosts,
             'flaws': flaws,
+
             'sessions': sessions,
+            'download_queue': {}.items(),
+            'upload_queue': {}.items(),
 
             'services': [list(services.keys()), list(services.values())],
             'platforms': [list(platforms.keys()), list(platforms.values())],
@@ -593,5 +719,15 @@ class Network:
             'session_countries': [list(session_countries.keys()), list(session_countries.values())],
             'session_types': [list(session_types.keys()), list(session_types.values())]
         }
+
+        if project_uuid in self.download_queue:
+            data.update({
+                'download_queue': self.download_queue[project_uuid].items()
+            })
+
+        if project_uuid in self.upload_queue:
+            data.update({
+                'upload_queue': self.upload_queue[project_uuid].items()
+            })
 
         return data

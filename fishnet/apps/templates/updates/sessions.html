@@ -1,3 +1,12 @@
+<style>
+.list-group {
+    max-height: 20rem;
+    margin-bottom: 10px;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+</style>
+
 <div class="page-inner">
     <div class="page-header">
         <h4 class="page-title">{{ project.name }}</h4>
@@ -90,10 +99,102 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-7">
-                            <div id="sessions-globe" class="update-protected" style="height: 50rem;"></div>
+                        <div class="col-md-4">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-head-row">
+                                                <div class="card-title">Download</div>
+                                                <div class="card-tools">
+                                                    <button class="btn btn-info btn-border btn-round btn-sm">
+                                                        <span class="btn-label">
+                                                            <i class="fa fa-download mr-2"></i>
+                                                        </span>
+                                                        New
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group">
+                                                {% for session, jobs in download_queue %}
+                                                {% for job, data in jobs.items %}
+                                                <li class="list-group-item">
+                                                    <div class="card card-stats card-primary card-round">
+						                                <div class="card-body">
+							                                <div class="row">
+								                                <div class="col-5">
+									                                <div class="icon-big text-center">
+										                                <i class="flaticon-file"></i>
+									                                </div>
+								                                </div>
+								                                <div class="col-7 col-stats">
+									                                <div class="numbers">
+                                                                        <h4 class="card-title">{{ data.0 }} -> {{ data.1 }}</h4>
+										                                <p class="card-category">Session {{ session }}</p>
+									                                </div>
+								                                </div>
+							                                </div>
+						                                </div>
+					                                </div>
+                                                </li>
+                                                {% endfor %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="card-head-row">
+                                                <div class="card-title">Upload</div>
+                                                <div class="card-tools">
+                                                    <button class="btn btn-info btn-border btn-round btn-sm">
+                                                        <span class="btn-label">
+                                                            <i class="fa fa-upload mr-2"></i>
+                                                        </span>
+                                                        New
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group">
+                                                {% for session, jobs in upload_queue %}
+                                                {% for job, data in jobs.items %}
+                                                <li class="list-group-item">
+                                                    <div class="card card-stats card-primary card-round">
+						                                <div class="card-body">
+							                                <div class="row">
+								                                <div class="col-5">
+									                                <div class="icon-big text-center">
+										                                <i class="flaticon-file"></i>
+									                                </div>
+								                                </div>
+								                                <div class="col-7 col-stats">
+									                                <div class="numbers">
+                                                                        <h4 class="card-title">{{ data.1 }} <- {{ data.0 }}</h4>
+										                                <p class="card-category">Session {{ session }}</p>
+									                                </div>
+								                                </div>
+							                                </div>
+						                                </div>
+					                                </div>
+                                                </li>
+                                                {% endfor %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-4">
+                            <div id="sessions-globe" class="update-protected" style="height: 30rem;"></div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="card">

@@ -202,8 +202,63 @@
                 <div class="card-body">
                     <h4 class="mt-3 b-b1 pb-2 mb-4 fw-bold">Active sessions</h4>
                     <h1 class="mb-4 fw-bold">{{ sessions | length }}</h1>
-                    <h4 class="mt-3 b-b1 pb-2 mb-5 fw-bold">Sessions globe</h4>
-                    <div id="sessions-globe" class="update-protected" style="height: 20rem;"></div>
+                    <h4 class="mt-3 b-b1 pb-2 mb-5 fw-bold">Recent sessions</h4>
+                    <div class="table-responsive table-hover table-sales">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Country</th>
+                                <th scope="col">Platform</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Host</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for session in sessions %}
+                            {% if session.project == project.uuid %}
+                            {% if forloop.counter < 6 %}
+                            <tr>
+                                <td>{{ session.session }}</td>
+                                <td>
+                                    <img draggable="false" src="/static/assets/img/flags/{{ session.country | lower }}.png">
+                                </td>
+                                <td>
+                                    <img draggable="false" height="25px" width="25px" src="/static/assets/img/{{ session.platform }}.png">
+                                </td>
+                                <td>{{ session.type }}</td>
+                                <td>{{ session.host }}</td>
+                                <td>
+                                    <div class="form-button-action">
+                                        <button class="btn btn-link btn-dark"
+                                                data-original-title="Terminal"
+                                                onclick="setSession({{ session.session }});"
+                                                data-target="#terminal"
+                                                data-toggle="modal"
+                                                title="" type="submit"
+                                                value="{{ session.session }}">
+                                            <i class="fa fa-terminal"></i>
+                                        </button>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <button class="btn btn-link btn-danger"
+                                                    data-original-title="Close"
+                                                    data-toggle="tooltip" name="close_session"
+                                                    title="" type="submit"
+                                                    value="{{ session.session }}">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -258,65 +313,6 @@
 </div>
 
 <script>
-var chart = am4core.create("sessions-globe", am4maps.MapChart);
-
-chart.geodata = am4geodata_worldLow;
-chart.projection = new am4maps.projections.Orthographic();
-chart.deltaLatitude = -30;
-chart.panBehavior = "rotateLongLat";
-chart.marginTop = 20;
-chart.marginBottom = 20;
-
-var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
-polygonSeries.useGeodata = true;
-polygonSeries.north = 90;
-polygonSeries.south = -90;
-
-var polygonTemplate = polygonSeries.mapPolygons.template;
-polygonTemplate.tooltipText = "{name}";
-polygonTemplate.fill = am4core.color("#1582e8");
-polygonTemplate.stroke = am4core.color("#aaa");
-polygonTemplate.strokeWidth = 1;
-
-var imageSeries = chart.series.push(new am4maps.MapImageSeries());
-
-var imageSeriesTemplate = imageSeries.mapImages.template;
-var circle = imageSeriesTemplate.createChild(am4core.Circle);
-circle.radius = 4;
-circle.fill = am4core.color("#B27799");
-circle.stroke = am4core.color("#FFFFFF");
-circle.strokeWidth = 2;
-circle.nonScaling = true;
-circle.tooltipText = "{title}";
-
-imageSeriesTemplate.propertyFields.latitude = "latitude";
-imageSeriesTemplate.propertyFields.longitude = "longitude";
-
-imageSeries.data = [
-{% for session in sessions %}
-{% if session.project == project.uuid %}
-{
-  "latitude": {{ session.latitude }},
-  "longitude": {{ session.longitude }},
-  "title": "{{ session.host }}"
-},
-{% endif %}
-{% endfor %}
-];
-
-var hs = polygonTemplate.states.create("hover");
-hs.properties.fill = am4core.color("#1572e8");
-
-chart.animate({
-  key: "rotationX",
-  from: 0,
-  to: 360,
-  duration: 30000,
-  loops: Infinity
-});
-
-chart.appear(1000, 100);
-
 $('#dashboard-image').on('click', function() {
     html2canvas(document.querySelector("#dashboard")).then(canvas => {
         var link = document.createElement("a");

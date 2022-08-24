@@ -1,54 +1,138 @@
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'network' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/network" role="button">
-        <i class="fa fa-wifi mr-2"></i>
-        <span>Dashboard</span>
-    </a>
-</li>
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'topology' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/topology" role="button">
-        <i class="fa fa-sitemap mr-2"></i>
-        <span class="{% if hosts %}mr-2{% endif %}">Topology</span>
-        {% if hosts %}
-        <span class="badge badge-success">{{ hosts | length }}</span>
+<style>
+.header__left>img {
+  height: 40px;
+}
+
+.header__items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  background-color: #e4e6eb;
+  border-radius: 50%;
+  transition: background-color 0.2s ease-in-out;
+  transition-timing-function: cubic-bezier(0, 0, 1, 1);
+}
+
+.header__center {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.header__option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  height: auto;
+  min-height: 62px;
+}
+
+.header__right {
+  display: flex;
+}
+
+.header__info {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+}
+
+.header__info>span {
+  margin-left: 10px;
+}
+
+.header__option:hover {
+  background-color: #f0f2f5;
+  border-top-left-radius: 1px;
+  border-top-right-radius: 1px;
+  border-bottom-right-radius: 1px;
+  border-bottom-left-radius: 1px;
+}
+
+.header__option.active,
+.header__option:hover {
+  color: #1877f2;
+  box-shadow: inset 0 -3px #1877f2;
+  /* border-bottom: 1px solid #1877f2; */
+  border-bottom-width: 3px;
+  background-color: #f8f9fa;
+}
+</style>
+
+<div class="header__center">
+    <div class="nav-item hidden-caret header__option {% if 'network' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('network');" href="#" role="button">
+            <i class="fa fa-wifi mr-2"></i>
+            <span>Dashboard</span>
+        </a>
+    </div>
+    <div class="nav-item hidden-caret header__option {% if 'topology' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('topology');" href="#" role="button">
+            <i class="fa fa-sitemap mr-2"></i>
+            <span class="{% if hosts %}mr-2{% endif %}">Topology</span>
+            {% if hosts %}
+            <span class="badge badge-success">{{ hosts | length }}</span>
+            {% endif %}
+        </a>
+    </div>
+    <div class="nav-item hidden-caret header__option {% if 'services' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('services');" href="#" role="button">
+            <i class="fa fa-eye mr-2"></i>
+            <span class="{% if services.0 %}mr-2{% endif %}">Services</span>
+            {% if services.0 %}
+            <span class="badge badge-success">{{ services.0 | length }}</span>
+            {% endif %}
+        </a>
+    </div>
+    <div class="nav-item hidden-caret header__option {% if 'flaws' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('flaws');" href="#" role="button">
+            <i class="fa fa-lock-open mr-2"></i>
+            <span class="{% if flaws %}mr-2{% endif %}">Flaws</span>
+            {% if flaws %}
+            <span class="badge badge-danger">{{ flaws | length }}</span>
+            {% endif %}
+        </a>
+    </div>
+    <div class="nav-item hidden-caret header__option {% if 'attack' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('attack');" href="#" role="button">
+            <i class="fa fa-bomb mr-2"></i>
+            <span>Attack</span>
+        </a>
+    </div>
+    <div class="nav-item hidden-caret header__option {% if 'sessions' in segment %}active{% endif %}">
+        <a aria-expanded="false" aria-haspopup="true" class="btn"
+            onclick="updateContext('sessions');" href="#" role="button">
+            <i class="fa fa-user mr-2"></i>
+            <span class="{% if sessions %}mr-2{% endif %}">Sessions</span>
+            {% if sessions %}
+            <span class="badge badge-success">{{ sessions | length }}</span>
+            {% endif %}
+        </a>
+    </div>
+</div>
+
+<script>
+    function updateContext(segment) {
+        $('#content').html('');
+        clearIntervals();
+
+        {% if project.running %}
+        var running = true;
+        {% else %}
+        var running = false;
         {% endif %}
-    </a>
-</li>
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'services' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/services" role="button">
-        <i class="fa fa-eye mr-2"></i>
-        <span class="{% if services.0 %}mr-2{% endif %}">Services</span>
-        {% if services.0 %}
-        <span class="badge badge-success">{{ services.0 | length }}</span>
-        {% endif %}
-    </a>
-</li>
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'flaws' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/flaws" role="button">
-        <i class="fa fa-lock-open mr-2"></i>
-        <span class="{% if flaws %}mr-2{% endif %}">Flaws</span>
-        {% if flaws %}
-        <span class="badge badge-danger">{{ flaws | length }}</span>
-        {% endif %}
-    </a>
-</li>
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'attack' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/attack" role="button">
-        <i class="fa fa-bomb mr-2"></i>
-        <span>Attack</span>
-    </a>
-</li>
-<li class="nav-item hidden-caret">
-    <a aria-expanded="false" aria-haspopup="true" class="btn {% if 'sessions' in segment %}btn-primary{% endif %}"
-       href="/{{ project.uuid }}/sessions" role="button">
-        <i class="fa fa-user mr-2"></i>
-        <span class="{% if sessions %}mr-2{% endif %}">Sessions</span>
-        {% if sessions %}
-        <span class="badge badge-success">{{ sessions | length }}</span>
-        {% endif %}
-    </a>
-</li>
+
+        updateNavigation('{{ request.path }}', segment, '{{ project.uuid }}', running);
+        updateContent('{{ request.path }}', segment, '{{ project.uuid }}', running);
+    }
+</script>

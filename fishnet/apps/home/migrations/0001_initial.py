@@ -108,6 +108,7 @@ class Migration(migrations.Migration):
                 ('category', models.CharField(max_length=250)),
                 ('author', models.CharField(max_length=250)),
                 ('team', models.CharField(max_length=250)),
+                ('plugins', PickledObjectField()),
                 ('running', models.BooleanField()),
                 ('archived', models.BooleanField())
             ]

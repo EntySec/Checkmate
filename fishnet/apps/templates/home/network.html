@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Dashboard {% endblock %}
+{% block title %} {{ segment | title }} {% endblock %}
 
 {% block stylesheets %}{% endblock stylesheets %}
 
@@ -8,16 +8,4 @@
 <div class="content" id="content"></div>
 {% endblock content %}
 
-{% block javascripts %}
-<script>
-	$(document).ready(function() {
-        update("/{{ project.uuid }}/network", "network", "{{ project.uuid }}", {'animate': true});
-
-        {% if project.running %}
-        setInterval(function() {
-            update("/{{ project.uuid }}/network", "network", "{{ project.uuid }}")
-        }, 5000);
-        {% endif %}
-	});
-</script>
-{% endblock javascripts %}
+{% block javascripts %}{% endblock javascripts %}

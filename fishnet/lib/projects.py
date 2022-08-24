@@ -84,7 +84,7 @@ class Projects:
             Project.objects.filter(uuid=project_uuid).update(name=new_name)
 
     @staticmethod
-    def create_project(name, category, author, team):
+    def create_project(name, category, author, team, plugins):
         project_uuid = str(uuid.uuid4())
 
         Project.objects.create(
@@ -93,6 +93,7 @@ class Projects:
             category=category,
             author=author,
             team=team,
+            plugins=plugins,
             archived=False,
             running=False
         )

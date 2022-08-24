@@ -106,6 +106,7 @@ class Project(models.Model):
     category = models.CharField(max_length=250)
     author = models.CharField(max_length=250)
     team = models.CharField(max_length=250)
+    plugins = PickledObjectField()
     archived = models.BooleanField()
     running = models.BooleanField()
 

@@ -15,8 +15,6 @@ from fishnet.lib.storage import Storage
 class FishnetPlugin(Plugin, Projects, Storage):
     net = Net()
 
-    scan_job = threading.Thread()
-
     details = {
         'Name': 'Auditor',
         'Category': 'network'
@@ -31,23 +29,19 @@ class FishnetPlugin(Plugin, Projects, Storage):
         hosts_db = self.hosts_db()
         networks_db = self.networks_db()
 
-        while True:
-            if not self.check_project_running(project_uuid):
-                break
+        scan_job = threading.Thread(
+            target=self.net.start_full_scan,
+            args=[
+                gateway,
+                iface,
+                method
+            ]
+        )
 
-            if not self.scan_job.is_alive():
-                self.scan_job = threading.Thread(
-                    target=self.net.start_full_scan,
-                    args=[
-                        gateway,
-                        iface,
-                        method
-                    ]
-                )
+        scan_job.setDaemon(True)
+        scan_job.start()
 
-                self.scan_job.setDaemon(True)
-                self.scan_job.start()
-
+        while scan_job.is_alive():
             result = self.net.full_scan_result()
 
             if result:

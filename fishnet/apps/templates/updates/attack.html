@@ -44,15 +44,17 @@
                 </div>
                 <div class="card-body" id="options-content">
                     <div class="row mt-2">
-                        {% for option, value in options %}
+                        {% for option, data in options %}
                         {% if option == 'PAYLOAD' %}
                         <div class="col-md-4">
                             <div class="form-group form-group-default">
-                                <label>{{ option }}</label>
+                                <label>
+                                    {{ option }}
+                                </label>
                                 <select class="form-control" id="{{ option }}" name="{{ option }}"
                                         onchange="addPayloadOptions('{{ option }}', this.value);">
                                     {% if value is not None %}
-                                    <option value="{{ value }}" selected>{{ value }}</option>
+                                    <option value="{{ data.0 }}" selected>{{ data.0 }}</option>
                                     {% for payload in all_payloads %}
                                     <option value="{{ payload }}">{{ payload }}</option>
                                     {% endfor %}
@@ -66,14 +68,16 @@
                             </div>
                         </div>
                         {% else %}
-                        {% if value == 'yes' or value == 'no' %}
+                        {% if data.0 == 'yes' or data.0 == 'no' %}
                         <div class="col-md-4">
                             <div class="form-group form-group-default">
-                                <label>{{ option }}</label>
+                                <label>
+                                    {{ option }}
+                                </label>
                                 <select class="form-control" id="{{ option }}" name="{{ option }}"
                                         onchange="addPayloadOptions('{{ option }}', this.value);">
-                                    <option value="{{ value }}" selected>{{ value }}</option>
-                                    {% if value == 'yes' %}
+                                    <option value="{{ data.0 }}" selected>{{ data.0 }}</option>
+                                    {% if data.0 == 'yes' %}
                                     <option value="no">no</option>
                                     {% else %}
                                     <option value="yes">yes</option>
@@ -84,9 +88,11 @@
                         {% else %}
                         <div class="col-md-4">
                             <div class="form-group form-group-default">
-                                <label>{{ option }}</label>
+                                <label>
+                                    {{ option }}
+                                </label>
                                 <input class="form-control" id="{{ option }}" name="{{ option }}" placeholder="{{ option }}" type="text"
-                                       value="{% if value is not None %}{{ value }}{% endif %}"
+                                       value="{% if data.0 is not None %}{{ data.0 }}{% endif %}"
                                        onchange="setFlawOption('{{ request.path }}', '{{ current_flaw }}', '{{ option }}', this.value);">
                             </div>
                         </div>

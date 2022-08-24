@@ -27,6 +27,7 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/2.29.1/js/jquery.terminal.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"></script>
 
 <script src="/static/assets/js/fishnet.min.js"></script>
 
@@ -37,16 +38,23 @@
 <script>
     {% if project %}
     $(document).ready(function() {
-        update_navigation('{{ request.path }}', '{{ project.uuid }}');
+        updateNavigation('{{ request.path }}', 'network', '{{ project.uuid }}', false);
+        updateContent('{{ request.path }}', 'network', '{{ project.uuid }}', false);
+    });
+    {% endif %}
 
-        setInterval(function() {
-            update_navigation('{{ request.path }}', '{{ project.uuid }}')
-        }, 1000);
-	});
-	{% endif %}
+    function sendForm(form) {
+        if (form) {
+            $.ajax({
+                type: "POST",
+                url: '{{ request.path }}',
+                data: $(form).serialize()
+            });
+        }
+    }
 
     function update(url, update, project_uuid, params = {}) {
-        if (!$._data(window, "events").resize[1] && $('.update-protected:hover').length == 0) {
+        if (!$._data(window, "events").resize[1] && $('.update-protected:hover') || $('.update-protected:hover').length == 0) {
             var data_params = {
                 project_uuid: project_uuid,
                 update: update,
@@ -69,10 +77,43 @@
         }
     }
 
-    function update_navigation(url, project_uuid) {
+    function updateContent(url, segment, project_uuid, is_running) {
+        update(url, segment, project_uuid, {'animate': true});
+
+        if (is_running) {
+            self.threaded_interval = setInterval(function() {
+                update(url, segment, project_uuid)
+            }, 5000);
+        }
+	}
+
+    function updateNavigation(url, segment, project_uuid, is_running) {
+        updateNavigationContent(url, segment, project_uuid);
+
+        if (is_running) {
+            self.threaded_navigation_interval = setInterval(function() {
+                updateNavigationContent('{{ request.path }}', segment, '{{ project.uuid }}')
+            }, 1000);
+        }
+    }
+
+    function clearIntervals() {
+        clearInterval(self.threaded_interval);
+        clearInterval(self.threaded_navigation_interval);
+    }
+
+    function startIntervals() {
+        {% if project %}
+        updateNavigation('{{ request.path }}', 'network', '{{ project.uuid }}', true);
+        updateContent('{{ request.path }}', 'network', '{{ project.uuid }}', true);
+        {% endif %}
+    }
+
+    function updateNavigationContent(url, segment, project_uuid) {
         var data_params = {
             project_uuid: project_uuid,
-            update: 'navigation',
+            update: segment,
+            navigation: true,
             csrfmiddlewaretoken: '{{ csrf_token }}',
         };
 
@@ -121,7 +162,9 @@
             $.ajax(url, {
                 type: 'POST',
                 data: {
-                    attack_details: flaw,
+                    update: 'attack_details',
+                    project_uuid: '{{ project.uuid }}',
+                    flaw_options: flaw,
                     host: host,
                     port: port,
                     csrfmiddlewaretoken: '{{ csrf_token }}'

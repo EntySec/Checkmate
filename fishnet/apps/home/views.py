@@ -46,35 +46,46 @@ def realtime_update(request):
 
     if request.method == 'POST':
         if 'update' in request.POST:
+            update = request.POST['update']
             load_template = request.path.split('/')
             endpoint = load_template[-1]
-            update = request.POST['update']
 
-            if request.POST['project_uuid']:
+            if 'project_uuid' in request.POST and request.POST['project_uuid']:
                 project_uuid = request.POST['project_uuid']
                 project = projects.get_project(project_uuid)
                 if projects.get_project(project_uuid).category == 'network':
                     context = network.get_scan(project_uuid)
 
-                    if endpoint == 'attack':
+                    if update == 'attack':
                         context.update({
-                            'all_flaws': network.get_flaws(),
+                            'all_flaws': network.get_flaws(project_uuid),
                         })
 
-                        if 'flaw_options' in request.POST:
-                            flaw = request.POST['flaw_options']
-                            context.update({
-                                'current_flaw': flaw,
-                                'options': network.get_flaw_options(project_uuid, flaw).items(),
-                                'all_payloads': network.get_payloads(project_uuid, flaw)
-                            })
+                    if 'flaw_options' in request.POST:
+                        flaw = request.POST['flaw_options']
+                        context.update({
+                            'current_flaw': flaw,
+                            'options': network.get_flaw_options(project_uuid, flaw).items(),
+                            'all_payloads': network.get_payloads(project_uuid, flaw)
+                        })
+
+                        if 'host' in request.POST:
+                            if request.POST['host']:
+                                network.set_option(project_uuid, flaw, 'host', request.POST['host'])
+
+                        if 'port' in request.POST:
+                            if request.POST['port']:
+                                network.set_option(project_uuid, flaw, 'port', request.POST['port'])
 
                 context.update({
-                    'segment': endpoint,
+                    'segment': update,
                     'project': project,
                     'dark_mode': settings.get_settings(request.user.username).dark,
                     'animate': request.POST['animate'] if 'animate' in request.POST else False
                 })
+
+                if 'navigation' in request.POST and request.POST['navigation']:
+                    update = 'navigation'
 
                 html_template = loader.get_template(f'updates/{update}.html')
                 return HttpResponse(html_template.render(context, request))
@@ -257,17 +268,19 @@ def projects_page(request):
             name = request.POST['name']
             category = request.POST['category']
             team = request.POST['team']
+            plugins = request.POST.getlist('plugins')
 
             if team == 'private':
                 team = ''
 
             author = request.user.username
-            projects.create_project(name, category, author, team)
+            projects.create_project(name, category, author, team, plugins)
 
     context.update({
         'dark_mode': settings.get_settings(request.user.username).dark,
         'projects': projects.get_projects(),
         'teams': teams.get_teams(),
+        'plugins': network.scanners.items(),
         'users': get_user_model().objects.all()
     })
 
@@ -308,17 +321,12 @@ def pages(request):
                         if 'project_run' in request.POST:
                             projects.run_project(project_uuid)
                             if projects.get_project(project_uuid).category == 'network':
-                                if 'gateway' in request.POST:
-                                    network.run_scan(
-                                        project_uuid,
-                                        request.POST.getlist('scanners'),
-                                        request.POST['gateway']
-                                    )
-                                else:
-                                    network.run_scan(
-                                        project_uuid,
-                                        request.POST.getlist('scanners')
-                                    )
+                                network.run_scan(
+                                    project_uuid,
+                                    request.POST.getlist('scanners'),
+                                    request.POST['gateway'],
+                                    True if 'cycle' in request.POST else False
+                                )
 
                         elif 'project_stop' in request.POST:
                             projects.stop_project(project_uuid)
@@ -348,24 +356,6 @@ def pages(request):
                                 context = network.get_flaw_details(project_uuid, flaw)
 
                                 html_template = loader.get_template('updates/flaw_details.html')
-                                return HttpResponse(html_template.render(context, request))
-
-                            if 'attack_details' in request.POST:
-                                flaw = request.POST['attack_details']
-                                context = {
-                                    'options': network.get_flaw_options(project_uuid, flaw),
-                                    'flaw': flaw
-                                }
-
-                                for option in context['options']:
-                                    if option.lower() == 'host':
-                                        context['options'][option] = request.POST['host']
-                                    elif option.lower() == 'port':
-                                        context['options'][option] = request.POST['port']
-
-                                context['options'] = context['options'].items()
-
-                                html_template = loader.get_template('updates/attack_details.html')
                                 return HttpResponse(html_template.render(context, request))
 
                             if 'session' in request.POST:
@@ -441,7 +431,7 @@ def pages(request):
 
         context.update({
             'project': project,
-            'scanners': network.scanners.items(),
+            'scanners': network.get_scanners(project_uuid).items(),
             'segment': endpoint,
             'projects': projects.get_projects(),
             'teams': teams.get_teams()

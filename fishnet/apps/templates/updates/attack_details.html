@@ -4,16 +4,42 @@
             <div class="card-title">Attack options</div>
         </div>
     </div>
-    <div class="card-body">
+    <div class="card-body" id="options-content">
         <div class="row mt-2">
-            {% for option, value in options %}
-            {% if value == 'yes' or value == 'no' %}
+            {% for option, data in options %}
+            {% if option == 'PAYLOAD' %}
             <div class="col-md-4">
                 <div class="form-group form-group-default">
-                    <label>{{ option }}</label>
-                    <select class="form-control" id="{{ option }}" name="{{ option }}">
-                        <option value="{{ value }}">{{ value }}</option>
-                        {% if value == 'yes' %}
+                    <label>
+                        {{ option }}
+                    </label>
+                    <select class="form-control" id="{{ option }}" name="{{ option }}"
+                            onchange="addPayloadOptions('{{ option }}', this.value);">
+                        {% if value is not None %}
+                        <option value="{{ data.0 }}" selected>{{ data.0 }}</option>
+                        {% for payload in all_payloads %}
+                        <option value="{{ payload }}">{{ payload }}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value="" selected disabled hidden>Select payload</option>
+                        {% for payload in all_payloads %}
+                        <option value="{{ payload }}">{{ payload }}</option>
+                        {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+            {% else %}
+            {% if data.0 == 'yes' or data.0 == 'no' %}
+            <div class="col-md-4">
+                <div class="form-group form-group-default">
+                    <label>
+                        {{ option }}
+                    </label>
+                    <select class="form-control" id="{{ option }}" name="{{ option }}"
+                            onchange="addPayloadOptions('{{ option }}', this.value);">
+                        <option value="{{ data.0 }}" selected>{{ data.0 }}</option>
+                        {% if data.0 == 'yes' %}
                         <option value="no">no</option>
                         {% else %}
                         <option value="yes">yes</option>
@@ -22,17 +48,16 @@
                 </div>
             </div>
             {% else %}
-            {% if option not in 'HOST,PORT' %}
             <div class="col-md-4">
                 <div class="form-group form-group-default">
-                    <label>{{ option }}</label>
-                    <input class="form-control" id="{{ option }}" name="{{ option }}" placeholder="{{ option }}"
-                           type="text"
-                           value="{% if value is not None %}{{ value }}{% endif %}">
+                    <label>
+                        {{ option }}
+                    </label>
+                    <input class="form-control" id="{{ option }}" name="{{ option }}" placeholder="{{ option }}" type="text"
+                           value="{% if data.0 is not None %}{{ data.0 }}{% endif %}"
+                           onchange="setFlawOption('{{ request.path }}', '{{ current_flaw }}', '{{ option }}', this.value);">
                 </div>
             </div>
-            {% else %}
-            <input type="hidden" id="{{ option }}" name="{{ option }}" value="{{ value }}">
             {% endif %}
             {% endif %}
             {% endfor %}
@@ -79,7 +104,13 @@ $('#attack-image').on('click', function() {
     });
 });
 
+function addPayloadOptions(option, value) {
+    setFlawOption('{{ request.path }}', '{{ current_flaw }}', option, value);
+    fillAttackDetails('{{ request.path }}', '{{ current_flaw }}', '', '');
+}
+
 function executeAttack(url) {
+    {% if current_flaw %}
     if (url) {
         data = '<center><i class="fa fa-cog fa-4x fa-spin"></i></center>'
         $('#attack-log').html(data);
@@ -87,10 +118,7 @@ function executeAttack(url) {
         $.ajax(url, {
             type: 'POST',
             data: {
-                attack: '{{ flaw }}',
-                {% for option, data in options %}
-                {{ option }}: document.getElementById('{{ option }}').value,
-                {% endfor %}
+                attack: '{{ current_flaw }}',
                 csrfmiddlewaretoken: '{{ csrf_token }}'
             },
             success: function(data) {
@@ -100,5 +128,6 @@ function executeAttack(url) {
     } else {
         $('#attack-log').html('');
     }
+    {% endif %}
 }
 </script>

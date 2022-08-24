@@ -58,7 +58,7 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                         platform=sessions[session_id]['Platform'],
                         architecture=sessions[session_id]['Architecture'],
                         type=sessions[session_id]['Type'],
-                        host=sessions[session_id]['Host'],
+                        host=host,
                         port=sessions[session_id]['Port'],
                         latitude=location['loc'].split(',')[0],
                         longitude=location['loc'].split(',')[1],
@@ -72,8 +72,8 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
             else:
                 sessions_db.filter(session=session.session).delete()
 
-    def session(self, session_id):
-        return self.get_session(session_id)
+    def execute(self, session_id, command):
+        return self.get_session(session_id).send_command(command, True)
 
     def close(self, session_id):
         self.close_session(session_id)
@@ -150,7 +150,17 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
         if payload:
             options.update(payload.options)
 
-        return options
+        result = {}
+
+        for option in options:
+            result.update({
+                option: [
+                    options[option]['Value'],
+                    options[option]['Description']
+                ]
+            })
+
+        return result
 
     def attack(self, flaw, options):
         self.disable_auto_interaction()
@@ -187,6 +197,9 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
                 self.runtime.update()
 
                 module = self.modules.get_current_module()
+
+                if module.details['Platform'].lower() != host.platform.lower():
+                    continue
 
                 if 'HOST' in module.options:
                     self.modules.set_current_module_option('HOST', host.host)
@@ -243,11 +256,7 @@ class FishnetPlugin(Plugin, Projects, Storage, Sessions):
         project_uuid = args['project_uuid']
         hosts_db = self.hosts_db()
 
-        while True:
-            if not self.check_project_running(project_uuid):
-                break
+        hosts = hosts_db.filter(project=project_uuid)
 
-            hosts = hosts_db.filter(project=project_uuid)
-
-            for host in hosts:
-                self.scan(host, project_uuid)
+        for host in hosts:
+            self.scan(host, project_uuid)

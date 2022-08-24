@@ -59,7 +59,7 @@
                                     <div class="card-body">
                                         <div aria-hidden="true" class="modal fade" id="addProject" role="dialog"
                                              tabindex="-1">
-                                            <div class="modal-dialog" role="document">
+                                            <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content"
                                                      style="background-color: {% if dark_mode %} #1f283e {% else %} #ffffff {% endif %}">
                                                     <div class="modal-header">
@@ -114,6 +114,30 @@
                                                                             {% endif %}
                                                                             {% endfor %}
                                                                         </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <p class="small">Select plugins</p>
+                                                            <div class="row">
+                                                                <div class="col-sm-12">
+                                                                    <div class="form-group form-group-default">
+                                                                        <div class="row">
+                                                                            {% for plugin, data in plugins %}
+                                                                            <div class="col-6 col-sm-4">
+                                                                                <label class="imagecheck mb-4">
+                                                                                    <input name="plugins" type="checkbox" value="{{ plugin }}" class="imagecheck-input">
+                                                                                    <figure class="imagecheck-figure">
+                                                                                        <center>
+                                                                                            <br>
+                                                                                            <img draggable="false" src="/static/{{ data.logo }}" height="50%" width="50%" alt="title" class="imagecheck-image mb-2">
+                                                                                            <label class="form-label">{{ plugin }}</label>
+                                                                                            <br>
+                                                                                        </center>
+                                                                                    </figure>
+                                                                                </label>
+                                                                            </div>
+                                                                            {% endfor %}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
