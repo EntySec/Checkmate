@@ -391,16 +391,9 @@ def pages(request):
 
                             if 'attack' in request.POST:
                                 flaw = request.POST['attack']
-                                options = network.get_flaw_options(project_uuid, flaw)
-
-                                for option in list(options):
-                                    if option in request.POST:
-                                        options.update({
-                                            option: request.POST[option]
-                                        })
 
                                 try:
-                                    result = network.run_attack(project_uuid, flaw, options)
+                                    result = network.run_attack(project_uuid, flaw)
 
                                 except RuntimeError as e:
                                     result = f"[-] {str(e)}"
