@@ -36,12 +36,14 @@
 <script src="https://cdn.amcharts.com/lib/4/geodata/worldLow.js"></script>
 
 <script>
-    {% if project %}
     $(document).ready(function() {
+        {% if project %}
         updateNavigation('{{ request.path }}', 'network', '{{ project.uuid }}', false);
         updateContent('{{ request.path }}', 'network', '{{ project.uuid }}', false);
+        {% else %}
+        updateNavigation('{{ request.path }}', '', '', false);
+        {% endif %}
     });
-    {% endif %}
 
     function sendForm(form) {
         if (form) {
@@ -102,11 +104,9 @@
         clearInterval(self.threaded_navigation_interval);
     }
 
-    function startIntervals() {
-        {% if project %}
-        updateNavigation('{{ request.path }}', 'network', '{{ project.uuid }}', true);
-        updateContent('{{ request.path }}', 'network', '{{ project.uuid }}', true);
-        {% endif %}
+    function startIntervals(segment) {
+        updateNavigation('{{ request.path }}', segment, '{{ project.uuid }}', true);
+        updateContent('{{ request.path }}', segment, '{{ project.uuid }}', true);
     }
 
     function updateNavigationContent(url, segment, project_uuid) {

@@ -50,36 +50,41 @@ def realtime_update(request):
             load_template = request.path.split('/')
             endpoint = load_template[-1]
 
-            if 'project_uuid' in request.POST and request.POST['project_uuid']:
+            if 'project_uuid' in request.POST:
                 project_uuid = request.POST['project_uuid']
-                project = projects.get_project(project_uuid)
-                if projects.get_project(project_uuid).category == 'network':
-                    context = network.get_scan(project_uuid)
 
-                    if update == 'attack':
-                        context.update({
-                            'all_flaws': network.get_flaws(project_uuid),
-                        })
+                if project_uuid:
+                    project = projects.get_project(project_uuid)
+                    if projects.get_project(project_uuid).category == 'network':
+                        context = network.get_scan(project_uuid)
 
-                    if 'flaw_options' in request.POST:
-                        flaw = request.POST['flaw_options']
-                        context.update({
-                            'current_flaw': flaw,
-                            'options': network.get_flaw_options(project_uuid, flaw).items(),
-                            'all_payloads': network.get_payloads(project_uuid, flaw)
-                        })
+                        if update == 'attack':
+                            context.update({
+                                'all_flaws': network.get_flaws(project_uuid),
+                            })
 
-                        if 'host' in request.POST:
-                            if request.POST['host']:
-                                network.set_option(project_uuid, flaw, 'host', request.POST['host'])
+                        if 'flaw_options' in request.POST:
+                            flaw = request.POST['flaw_options']
+                            context.update({
+                                'current_flaw': flaw,
+                                'options': network.get_flaw_options(project_uuid, flaw).items(),
+                                'all_payloads': network.get_payloads(project_uuid, flaw)
+                            })
 
-                        if 'port' in request.POST:
-                            if request.POST['port']:
-                                network.set_option(project_uuid, flaw, 'port', request.POST['port'])
+                            if 'host' in request.POST:
+                                if request.POST['host']:
+                                    network.set_option(project_uuid, flaw, 'host', request.POST['host'])
+
+                            if 'port' in request.POST:
+                                if request.POST['port']:
+                                    network.set_option(project_uuid, flaw, 'port', request.POST['port'])
+
+                    context.update({
+                        'project': project
+                    })
 
                 context.update({
                     'segment': update,
-                    'project': project,
                     'dark_mode': settings.get_settings(request.user.username).dark,
                     'animate': request.POST['animate'] if 'animate' in request.POST else False
                 })
@@ -240,6 +245,10 @@ def projects_page(request):
     allow_manage_teams(request)
     allow_create_team(request)
     allow_edit_profile(request)
+
+    update = realtime_update(request)
+    if update:
+        return update
 
     if request.method == 'POST':
         if 'archive_project' in request.POST:
