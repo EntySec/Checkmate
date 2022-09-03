@@ -7,12 +7,12 @@
             </li>
         </ul>
     </div>
-    <div class="row">
-        <div class="col-md-7">
+    <div class="shadow-sm row row-card-no-pd">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <div class="card-head-row card-tools-still-right">
-                        <h4 class="card-title">Topology</h4>
+                        <h4 class="card-title">Topology totals</h4>
                         <div class="card-tools">
                             <a id="topology-image" download="topology.png" class="btn btn-info btn-border btn-round btn-sm">
                                 <span class="btn-label">
@@ -24,58 +24,38 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="update-protected chart-container" style="min-height: 500px;">
-                        <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-head-row">
-                        <div class="card-title">Top platforms</div>
-                        <div class="card-tools">
-                            <button id="platforms-image" class="btn btn-info btn-border btn-round btn-sm">
-                                <span class="btn-label">
-                                    <i class="fa fa-file-export mr-2"></i>
-                                </span>
-                                Export
-                            </button>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="update-protected chart-container" style="min-height: 500px;">
+                                <div style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;" id="topology-chart"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="update-protected chart-container-sm">
+                                <canvas id="platforms-chart"></canvas>
+                            </div>
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Gateway</th>
+                                    <th scope="col">Interface</th>
+                                    <th scope="col">Method</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for network in networks %}
+                                {% if network.project == project.uuid %}
+                                <tr>
+                                    <td>{{ network.gateway }}</td>
+                                    <td><span class="badge badge-primary">{{ network.iface }}</span></td>
+                                    <td><span class="badge badge-secondary">{{ network.method }}</span></td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="update-protected chart-container-sm">
-                        <canvas id="platforms-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Target networks</div>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th scope="col">Gateway</th>
-                            <th scope="col">Interface</th>
-                            <th scope="col">Method</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for network in networks %}
-                        {% if network.project == project.uuid %}
-                        <tr>
-                            <td>{{ network.gateway }}</td>
-                            <td><span class="badge badge-primary">{{ network.iface }}</span></td>
-                            <td><span class="badge badge-secondary">{{ network.method }}</span></td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -83,15 +63,6 @@
 </div>
 
 <script>
-$('#platforms-image').on('click', function() {
-    var link = document.createElement("a");
-    document.body.appendChild(link);
-    link.download = "platforms.png";
-    link.href = platformsChart.toBase64Image();
-    link.target = '_blank';
-    link.click();
-});
-
 var nodes = null;
 var edges = null;
 var network = null;
