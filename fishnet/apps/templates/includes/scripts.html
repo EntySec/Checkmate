@@ -41,7 +41,9 @@
         updateNavigation('{{ request.path }}', 'network', '{{ project.uuid }}', false);
         updateContent('{{ request.path }}', 'network', '{{ project.uuid }}', false);
         {% else %}
+        {% if 'login' not in request.path and 'register' not in request.path %}
         updateNavigation('{{ request.path }}', '', '', false);
+        {% endif %}
         {% endif %}
     });
 

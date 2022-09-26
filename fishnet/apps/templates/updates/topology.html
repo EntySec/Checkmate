@@ -7,22 +7,9 @@
             </li>
         </ul>
     </div>
-    <div class="shadow-sm row row-card-no-pd">
+    <div class="shadow-sm row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <div class="card-head-row card-tools-still-right">
-                        <h4 class="card-title">Topology totals</h4>
-                        <div class="card-tools">
-                            <a id="topology-image" download="topology.png" class="btn btn-info btn-border btn-round btn-sm">
-                                <span class="btn-label">
-                                    <i class="fa fa-file-export mr-2"></i>
-                                </span>
-                                Export
-                            </a>
-                        </div>
-                    </div>
-                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -31,29 +18,53 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="update-protected chart-container-sm">
-                                <canvas id="platforms-chart"></canvas>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="shadow-sm card">
+                                        <div class="card-header">
+                                            <div class="card-head-row">
+                                                <div class="card-title">Platforms done</div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="update-protected chart-container-sm">
+                                                <canvas id="platforms-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="shadow-sm card">
+                                        <div class="card-header">
+                                            <div class="card-head-row">
+                                                <div class="card-title">Networks done</div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Gateway</th>
+                                                    <th scope="col">Interface</th>
+                                                    <th scope="col">Method</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for network in networks %}
+                                                    {% if network.project == project.uuid %}
+                                                    <tr>
+                                                        <td>{{ network.gateway }}</td>
+                                                        <td><span class="badge badge-primary">{{ network.iface }}</span></td>
+                                                        <td><span class="badge badge-secondary">{{ network.method }}</span></td>
+                                                    </tr>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Gateway</th>
-                                    <th scope="col">Interface</th>
-                                    <th scope="col">Method</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for network in networks %}
-                                {% if network.project == project.uuid %}
-                                <tr>
-                                    <td>{{ network.gateway }}</td>
-                                    <td><span class="badge badge-primary">{{ network.iface }}</span></td>
-                                    <td><span class="badge badge-secondary">{{ network.method }}</span></td>
-                                </tr>
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
