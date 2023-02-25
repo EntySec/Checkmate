@@ -1,5 +1,7 @@
 <h3 align="center"><img src="https://user-images.githubusercontent.com/54115104/177413493-61ef4ce7-9b65-4d5e-bfbd-882d193c7d33.png" alt="logo" height="250px"></h3>
 
+> **Warning**  
+> Do not use Fishnet Framework in production environments. It is unstable and can be used only for testing purposes. Follow [Checkmate C2](https://github.com/CheckmateC2) for updates.
 
 <p align="center">
     <b>Fishnet Framework</b><br>
