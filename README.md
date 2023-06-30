@@ -1,4 +1,4 @@
-<h3 align="center"><img src="https://github.com/EntySec/Checkmate/assets/54115104/d255cc70-b3d2-46dd-9f56-882ae18c83fb" alt="logo" height="250px"></h3>
+<h3 align="center"><img src="https://github.com/EntySec/Checkmate/assets/54115104/efb6ece1-0b69-4c5a-abe9-88c8ce64cfc7" alt="logo" height="250px"></h3>
 
 <p align="center">
     <b>Checkmate C2</b>
